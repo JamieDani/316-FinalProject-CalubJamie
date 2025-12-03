@@ -1,0 +1,610 @@
+{
+    "users": [
+        {
+            "firstName": "Joe",
+            "lastName": "Shmo",
+            "email": "joe@shmo.com",
+            "passwordHash": "$2a$10$dPEwsAVi1ojv2RfxxTpZjuKSAbep7zEKb5myegm.ATbQ4sJk4agGu",
+            "playlists": [
+                "68f524b611e0f3901871f164",
+                "68f526c1ec1ea2ad00a6fae0"
+            ]
+        },
+        {
+            "firstName": "Jane",
+            "lastName": "Doe",
+            "email": "jane@doe.com",
+            "passwordHash": "$2a$10$dPEwsAVi1ojv2RfxxTpZjuKSAbep7zEKb5myegm.ATbQ4sJk4agGu",
+            "playlists": [
+                "68f526c4ec1ea2ad00a6fae8"
+            ]
+        },
+        {
+            "firstName": "Sam",
+            "lastName": "Altman",
+            "email": "sam@openai.com",
+            "passwordHash": "$2a$10$dPEwsAVi1ojv2RfxxTpZjuKSAbep7zEKb5myegm.ATbQ4sJk4agGu",
+            "playlists": [
+                "68f526c4ec1ea2ad00a6fae8"
+            ]
+        }
+    ],
+    "playlists": [
+        {
+            "_id": "68f524b611e0f3901871f164",
+            "ownerEmail": "joe@shmo.com",
+            "name": "Spacey",
+            "songs": [
+                {
+                    "title": "Across the Universe",
+                    "artist": "The Beatles",
+                    "year": 1969,
+                    "youTubeId": "90M60PzmxEE"
+                },
+                {
+                    "title": "Astronomy Domine",
+                    "artist": "Pink Floyd",
+                    "year": 1967,
+                    "youTubeId": "8UbNbor3OqQ"
+                },
+                {
+                    "title": "Black Hole Sun",
+                    "artist": "Soundgarden",
+                    "year": 1994,
+                    "youTubeId": "3mbBbFH9fAg"
+                },
+                {
+                    "title": "Brain Damage/Eclipse",
+                    "artist": "Pink Floyd",
+                    "year": 1973,
+                    "youTubeId": "g1OOQP1-wOE"
+                },
+                {
+                    "title": "Fly Me to the Moon",
+                    "artist": "Frank Sinatra",
+                    "year": 1964,
+                    "youTubeId": "ZEcqHA7dbwM"
+                },
+                {
+                    "title": "In the Meantime",
+                    "artist": "Spacehog",
+                    "year": 1994,
+                    "youTubeId": "PCsGRCf8T9Y"
+                },
+                {
+                    "title": "Major Tom",
+                    "artist": "Peter Shilling",
+                    "year": 1982,
+                    "youTubeId": "wO0A0XcWy88"
+                },
+                {
+                    "title": "Man on the Moon",
+                    "artist": "REM",
+                    "year": 1992,
+                    "youTubeId": "dLxpNiF0YKs"
+                },
+                {
+                    "title": "Rocket Man",
+                    "artist": "Elton John",
+                    "year": 1972,
+                    "youTubeId": "DtVBCG6ThDk"
+                },
+                {
+                    "title": "Set the Controls for the Heart of the Sun",
+                    "artist": "Pink Floyd",
+                    "year": 1968,
+                    "youTubeId": "qupVCTn5Dko"
+                },
+                {
+                    "title": "Space Oddity",
+                    "artist": "David Bowie",
+                    "year": 1969,
+                    "youTubeId": "iYYRH4apXDo"
+                },
+                {
+                    "title": "Space Song",
+                    "artist": "Beach House",
+                    "year": 2015,
+                    "youTubeId": "RBtlPT23PTM"
+                },
+                {
+                    "title": "Starless",
+                    "artist": "King Crimson",
+                    "year": 1974,
+                    "youTubeId": "OfR6_V91fG8"
+                },
+                {
+                    "title": "Starman",
+                    "artist": "David Bowie",
+                    "year": 1972,
+                    "youTubeId": "t365MuktYQs"
+                },
+                {
+                    "title": "Starship Trooper",
+                    "artist": "Yes",
+                    "year": 1971,
+                    "youTubeId": "xk4U8BembHM"
+                }
+            ]
+        },
+        {
+            "_id": "68f526c1ec1ea2ad00a6fae0",
+            "ownerEmail": "joe@shmo.com",
+            "name": "Any Colour You Like",
+            "songs": [
+                {
+                    "title": "99 Red Balloons",
+                    "artist": "Nena",
+                    "year": 1984,
+                    "youTubeId": "Fpu5a0Bl8eY"
+                },
+                {
+                    "title": "Big Blue Sun",
+                    "artist": "Adrian Belew",
+                    "year": 1986,
+                    "youTubeId": "DMkEmW2awQw"
+                },
+                {
+                    "title": "Black Dog",
+                    "artist": "Led Zeppelin",
+                    "year": 1971,
+                    "youTubeId": "2KPEHohJMuw"
+                },
+                {
+                    "title": "Golden Brown",
+                    "artist": "The Stranglers",
+                    "year": 1981,
+                    "youTubeId": "7KIHvuMl4Kk"
+                },
+                {
+                    "title": "Goodbye Yellow Brick Road",
+                    "artist": "Elton John",
+                    "year": 1973,
+                    "youTubeId": "wy709iNG6i8"
+                },
+                {
+                    "title": "Green is the Colour",
+                    "artist": "Pink Floyd",
+                    "year": 1969,
+                    "youTubeId": "4XeWngFZaa8"
+                },
+                {
+                    "title": "In the Court of the Crimson King",
+                    "artist": "King Crimson",
+                    "year": 1969,
+                    "youTubeId": "ukgraQ-xkp4"
+                },
+                {
+                    "title": "Orange Crush",
+                    "artist": "REM",
+                    "year": 1988,
+                    "youTubeId": "_mSmOcmk7uQ"
+                },
+                {
+                    "title": "Pink Houses",
+                    "artist": "John Mellancamp",
+                    "year": 1983,
+                    "youTubeId": "qOfkpu6749w"
+                },
+                {
+                    "title": "Purple Rain",
+                    "artist": "Prince",
+                    "year": 1984,
+                    "youTubeId": "TvnYmWpD_T8"
+                },
+                {
+                    "title": "White Lines",
+                    "artist": "Grandmaster Flash and the Furious Five",
+                    "year": 1983,
+                    "youTubeId": "DwRXI-y6M9o"
+                }
+            ]
+        },
+        {
+            "_id": "68f526c4ec1ea2ad00a6fae8",
+            "ownerEmail": "jane@doe.com",
+            "name": "Don't be Rude",
+            "songs": [
+                {
+                    "title": "A Message to You Rudy",
+                    "artist": "The Specials",
+                    "year": 1979,
+                    "youTubeId": "cntvEDbagAw"
+                },
+                {
+                    "title": "Rudie Can't Fail",
+                    "artist": "The Clash",
+                    "year": 1979,
+                    "youTubeId": "uEK9oK02D1M"
+                }
+            ]
+        },
+        {
+            "_id": "6907b5a71e441f4fa2458ac8",
+            "ownerEmail": "sam@openai.com",
+            "name": "Old Songs",
+            "songs": [
+                {
+                    "title": "Whatsername",
+                    "artist": "Green Day",
+                    "year": 2004,
+                    "youTubeId": "ZyynCiqAGFE"
+                },
+                {
+                    "title": "Give Me Novacaine",
+                    "artist": "Green Day",
+                    "year": 2004,
+                    "youTubeId": "maoO-kUpOcU"
+                },
+                {
+                    "title": "Closing Time",
+                    "artist": "Semisonic",
+                    "year": 2009,
+                    "youTubeId": "xGytDsqkQY8"
+                },
+                {
+                    "title": "House of the Risin' Sun",
+                    "artist": "Bob Dylan",
+                    "year": 1962,
+                    "youTubeId": "RP_caKDfoyU"
+                },
+                {
+                    "title": "It Ain't Me Babe",
+                    "artist": "Bob Dylan",
+                    "year": 1964,
+                    "youTubeId": "YoagldK69U0"
+                },
+                {
+                    "title": "Oh! Darling",
+                    "artist": "The Beatles",
+                    "year": 1969,
+                    "youTubeId": "9BznFjbcBVs"
+                },
+                {
+                    "title": "While My Guitar Gently Weeps",
+                    "artist": "The Beatles",
+                    "year": 1968,
+                    "youTubeId": "VJDJs9dumZI"
+                },
+                {
+                    "title": "Paint it Black",
+                    "artist": "The Rolling Stones",
+                    "year": 1966,
+                    "youTubeId": "O4irXQhgMqg"
+                },
+                {
+                    "title": "The Long and Winding Road",
+                    "artist": "The Beatles",
+                    "year": 1970,
+                    "youTubeId": "fR4HjTH_fTM"
+                },
+                {
+                    "title": "Vienna",
+                    "artist": "Billy Joel",
+                    "year": 1977,
+                    "youTubeId": "irl89Gmcv8c"
+                },
+                {
+                    "title": "It's Gonna Be Me",
+                    "artist": "*NSYNC",
+                    "year": 2000,
+                    "youTubeId": "GQMlWwIXg3M"
+                },
+                {
+                    "title": "Say My Name",
+                    "artist": "Destiny's Child",
+                    "year": 1999,
+                    "youTubeId": "sQgd6MccwZc"
+                },
+                {
+                    "title": "Zombie",
+                    "artist": "The Cranberries",
+                    "year": 1994,
+                    "youTubeId": "6Ejga4kJUts"
+                },
+                {
+                    "title": "Bring Me to Life",
+                    "artist": "Evanescence",
+                    "year": 2003,
+                    "youTubeId": "3YxaaGgTQYM"
+                },
+                {
+                    "title": "My Immortal",
+                    "artist": "Evanescence",
+                    "year": 2003,
+                    "youTubeId": "5anLPw0Efmo"
+                },
+                {
+                    "title": "Stay (I Missed You)",
+                    "artist": "Lisa Loeb",
+                    "year": 1994,
+                    "youTubeId": "i9HGwRbMiVY"
+                },
+                {
+                    "title": "Every Rose Has Its Thorn",
+                    "artist": "Poison",
+                    "year": 2010,
+                    "youTubeId": "j2r2nDhTzO4"
+                },
+                {
+                    "title": "Time After Time",
+                    "artist": "Cyndi Lauper",
+                    "year": 2009,
+                    "youTubeId": "VdQY7BusJNU"
+                },
+                {
+                    "title": "Back to Black",
+                    "artist": "Amy Winehouse",
+                    "year": 2006,
+                    "youTubeId": "TJAfLE39ZZ8"
+                },
+                {
+                    "title": "Breakin' Dishes",
+                    "artist": "Rihanna",
+                    "year": 2007,
+                    "youTubeId": "LO71pC20BDI"
+                }
+            ]
+        },
+        {
+            "_id": "6907b5a71e441f4fa2458ac9",
+            "ownerEmail": "sam@openai.com",
+            "name": "Favorite Songs",
+            "songs": [
+                {
+                    "title": "On My Own",
+                    "artist": "Claude-Michel Schönberg",
+                    "year": 1987,
+                    "youTubeId": "VjfmP7h3gBw"
+                },
+                {
+                    "title": "Empty Chairs at Empty Tables",
+                    "artist": "Claude-Michel Schönberg",
+                    "year": 1987,
+                    "youTubeId": "JqtN9x3rPi4"
+                },
+                {
+                    "title": "I Love Play Rehearsal",
+                    "artist": "Joe Iconis",
+                    "year": 2017,
+                    "youTubeId": "OYmI2PEosOo"
+                },
+                {
+                    "title": "Michael in the Bathroom",
+                    "artist": "Joe Iconis",
+                    "year": 2017,
+                    "youTubeId": "Dj1P-5Ey4dU"
+                },
+                {
+                    "title": "Someone Gets Hurt",
+                    "artist": "Jeff Richmond",
+                    "year": 2018,
+                    "youTubeId": "yPM_lHYtGfk"
+                },
+                {
+                    "title": "Revenge Party",
+                    "artist": "Jeff Richmond",
+                    "year": 2018,
+                    "youTubeId": "Yj9nQbcMBgk"
+                },
+                {
+                    "title": "Fight For Me",
+                    "artist": "Laurence O'Keefe, Kevin Murphy",
+                    "year": 2014,
+                    "youTubeId": "DmHPhhJWNKI"
+                },
+                {
+                    "title": "Freeze Your Brain",
+                    "artist": "Laurence O'Keefe, Kevin Murphy",
+                    "year": 2014,
+                    "youTubeId": "GAOxJv96VE8"
+                },
+                {
+                    "title": "Santa Fe",
+                    "artist": "Jack Feldman",
+                    "year": 2011,
+                    "youTubeId": "DbesLnmb3m8"
+                },
+                {
+                    "title": "Something to Believe In",
+                    "artist": "Jack Feldman",
+                    "year": 2011,
+                    "youTubeId": "8FhVL0Jylm4"
+                },
+                {
+                    "title": "Waiting in the Wings",
+                    "artist": "Alan Menken",
+                    "year": 2019,
+                    "youTubeId": "Hq3BYt6CDkY"
+                },
+                {
+                    "title": "Let Me Make You Proud",
+                    "artist": "Alan Menken",
+                    "year": 2018,
+                    "youTubeId": "fPH_wwEvAkI"
+                },
+                {
+                    "title": "New Money",
+                    "artist": "Jason Howland, Nathan Tysen",
+                    "year": 2024,
+                    "youTubeId": "LJTUckGi9JQ"
+                },
+                {
+                    "title": "Only Tea",
+                    "artist": "Jason Howland, Nathan Tysen",
+                    "year": 2024,
+                    "youTubeId": "YtrT_Kbw16s"
+                },
+                {
+                    "title": "The Room Where it Happens",
+                    "artist": "Lin-Manuel Miranda",
+                    "year": 2015,
+                    "youTubeId": "e_FWUW6SnDo"
+                },
+                {
+                    "title": "The Schuyler Sisters",
+                    "artist": "Lin-Manuel Miranda",
+                    "year": 2015,
+                    "youTubeId": "POHVE9uCNAY"
+                },
+                {
+                    "title": "Therapy",
+                    "artist": "Jonathan Larson",
+                    "year": 2001,
+                    "youTubeId": "iJGnkuRHgs0"
+                },
+                {
+                    "title": "Sugar",
+                    "artist": "Jonathan Larson",
+                    "year": 2001,
+                    "youTubeId": "K0rYe1EEyyA"
+                },
+                {
+                    "title": "Only Us",
+                    "artist": "Benj Pasek, Justin Paul",
+                    "year": 2016,
+                    "youTubeId": "skhDdaGss-c"
+                },
+                {
+                    "title": "Requiem",
+                    "artist": "Benj Pasek, Justin Paul",
+                    "year": 2016,
+                    "youTubeId": "lEMoX4tP4Fk"
+                },
+                {
+                    "title": "Breathe",
+                    "artist": "Lin-Manuel Miranda",
+                    "year": 2007,
+                    "youTubeId": "v52GW3Z8YXo"
+                }
+            ]
+        },
+        {
+            "_id": "6907b5a71e441f4fa2458aca",
+            "ownerEmail": "sam@openai.com",
+            "name": "Interesting or Unusual",
+            "songs": [
+                {
+                    "title": "Spooktune",
+                    "artist": "Toby Fox",
+                    "year": 2015,
+                    "youTubeId": "lV65zxK61cI"
+                },
+                {
+                    "title": "Bird That Carries You Over A Disproportionately Small Gap",
+                    "artist": "Toby Fox",
+                    "year": 2015,
+                    "youTubeId": "-tslGvCIS3Q"
+                },
+                {
+                    "title": "Basics in Behavior",
+                    "artist": "The Living Tombstone",
+                    "year": 2018,
+                    "youTubeId": "weZKm1kTrpc"
+                },
+                {
+                    "title": "Discord",
+                    "artist": "Eurobeat Brony",
+                    "year": 2012,
+                    "youTubeId": "xPfMb50dsOk"
+                },
+                {
+                    "title": "might quit",
+                    "artist": "bill wurtz",
+                    "year": 2019,
+                    "youTubeId": "mpkf_p71rKY"
+                },
+                {
+                    "title": "i just did a bad thing",
+                    "artist": "bill wurtz",
+                    "year": 2018,
+                    "youTubeId": "O2yPnnDfqpw"
+                },
+                {
+                    "title": "Lazy Harp Seal Has No Job",
+                    "artist": "Parry Gripp",
+                    "year": 2012,
+                    "youTubeId": "-pv8D-ydR1s"
+                },
+                {
+                    "title": "Space Unicorn",
+                    "artist": "Parry Gripp",
+                    "year": 2012,
+                    "youTubeId": "17o1OlroNSE"
+                },
+                {
+                    "title": "Nom Nom Nom Nom Nom Nom Nom",
+                    "artist": "Parry Gripp",
+                    "year": 2009,
+                    "youTubeId": "SMWi7CLoZ2Q"
+                },
+                {
+                    "title": "Pink Fluffy Unicorns Dancing on Rainbows",
+                    "artist": "Andrew Huang",
+                    "year": 2013,
+                    "youTubeId": "qRC4Vk6kisY"
+                },
+                {
+                    "title": "Up the Mountain",
+                    "artist": "Regina Spektor",
+                    "year": 2022,
+                    "youTubeId": "KVg-z4rSDtk"
+                },
+                {
+                    "title": "All By Myself",
+                    "artist": "Green Day",
+                    "year": 1994,
+                    "youTubeId": "BPUSk7IUVmI"
+                },
+                {
+                    "title": "Shia LaBeouf Live",
+                    "artist": "Rob Cantor",
+                    "year": 2014,
+                    "youTubeId": "o0u4M6vppCI"
+                },
+                {
+                    "title": "Octopus's Garden",
+                    "artist": "The Beatles",
+                    "year": 1969,
+                    "youTubeId": "De1LCQvbqV4"
+                },
+                {
+                    "title": "Maxwell's Silver Hammer",
+                    "artist": "The Beatles",
+                    "year": 1969,
+                    "youTubeId": "mJag19WoAe0"
+                },
+                {
+                    "title": "Double Rainbow Song",
+                    "artist": "The Gregory Brothers",
+                    "year": 2010,
+                    "youTubeId": "MX0D4oZwCsA"
+                },
+                {
+                    "title": "The Duck Song",
+                    "artist": "Bryant Oden",
+                    "year": 2009,
+                    "youTubeId": "MtN1YnoL46Q"
+                },
+                {
+                    "title": "Don't Mine at Night",
+                    "artist": "Brad Knauber",
+                    "year": 2012,
+                    "youTubeId": "X_XGxzMrq04"
+                },
+                {
+                    "title": "Make A Cake",
+                    "artist": "Jolly ol' Brits",
+                    "year": 2012,
+                    "youTubeId": "efmmm_B46ls"
+                },
+                {
+                    "title": "Notice me Senpai",
+                    "artist": "Tiffany Garcia",
+                    "year": 2016,
+                    "youTubeId": "oq7B44odQ00"
+                }
+            ]
+        }
+    ]
+}
