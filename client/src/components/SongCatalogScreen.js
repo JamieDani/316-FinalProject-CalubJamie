@@ -4,9 +4,13 @@ import storeRequestSender from '../store/requests';
 import SongCard from './SongCard';
 import YouTubePlayer from './YouTubePlayer';
 import AddSongModal from './AddSongModal';
+import DeleteSongConfirmModal from './DeleteSongConfirmModal';
 
 const SongCatalogScreen = () => {
     const [isAddSongModalOpen, setIsAddSongModalOpen] = useState(false);
+    const [isEditSongModalOpen, setIsEditSongModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedSong, setSelectedSong] = useState(null);
     const [songs, setSongs] = useState([]);
     const [titleFilter, setTitleFilter] = useState("");
     const [artistFilter, setArtistFilter] = useState("");
@@ -55,12 +59,38 @@ const SongCatalogScreen = () => {
 
     const handleCloseAddSongModal = () => {
         setIsAddSongModalOpen(false);
-        fetchSongs(); 
+        fetchSongs();
+    };
+
+    const handleEditSong = (song) => {
+        setSelectedSong(song);
+        setIsEditSongModalOpen(true);
+    };
+
+    const handleCloseEditSongModal = () => {
+        setIsEditSongModalOpen(false);
+        setSelectedSong(null);
+        fetchSongs();
+    };
+
+    const handleDeleteSong = (song) => {
+        setSelectedSong(song);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleCloseDeleteModal = (deleted) => {
+        setIsDeleteModalOpen(false);
+        setSelectedSong(null);
+        if (deleted) {
+            fetchSongs();
+        }
     };
 
     return (
         <>
-            <AddSongModal open={isAddSongModalOpen} onClose={handleCloseAddSongModal} />
+            <AddSongModal open={isAddSongModalOpen} onClose={handleCloseAddSongModal} mode="add" />
+            <AddSongModal open={isEditSongModalOpen} onClose={handleCloseEditSongModal} mode="edit" song={selectedSong} />
+            <DeleteSongConfirmModal open={isDeleteModalOpen} onClose={handleCloseDeleteModal} song={selectedSong} />
         <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#ffe4e1' }}>
             <Box sx={{
                 flex: 1,
@@ -135,7 +165,12 @@ const SongCatalogScreen = () => {
 
                 <Box sx={{ flex: 1, overflowY: 'auto', mb: 2 }}>
                     {songs.map((song, index) => (
-                        <SongCard key={song._id || index} song={song} />
+                        <SongCard
+                            key={song._id || index}
+                            song={song}
+                            onEdit={handleEditSong}
+                            onDelete={handleDeleteSong}
+                        />
                     ))}
                 </Box>
 

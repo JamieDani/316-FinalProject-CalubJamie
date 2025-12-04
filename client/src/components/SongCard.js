@@ -1,7 +1,30 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { useState } from 'react';
 
 function SongCard(props) {
-    const { song } = props;
+    const { song, onEdit, onDelete } = props;
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+
+    const handleMenuClick = (event) => {
+        event.stopPropagation();
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleEdit = () => {
+        handleMenuClose();
+        onEdit(song);
+    };
+
+    const handleDelete = () => {
+        handleMenuClose();
+        onDelete(song);
+    };
 
     return (
         <Box
@@ -11,13 +34,34 @@ function SongCard(props) {
                 padding: 2,
                 marginBottom: 1,
                 backgroundColor: '#f9f9f9',
+                position: 'relative',
                 '&:hover': {
                     backgroundColor: '#f0f0f0',
                     cursor: 'pointer'
                 }
             }}
         >
-            <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
+            <IconButton
+                sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8
+                }}
+                onClick={handleMenuClick}
+            >
+                <MoreVertIcon />
+            </IconButton>
+
+            <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleMenuClose}
+            >
+                <MenuItem onClick={handleEdit}>Edit Song</MenuItem>
+                <MenuItem onClick={handleDelete}>Remove Song from Catalog</MenuItem>
+            </Menu>
+
+            <Typography variant="body1" sx={{ fontWeight: 500, mb: 1, pr: 5 }}>
                 "{song.title}" by {song.artist} ({song.year})
             </Typography>
             <Box sx={{ display: 'flex', gap: 3 }}>

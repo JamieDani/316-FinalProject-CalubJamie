@@ -171,6 +171,48 @@ getSongs = async (req, res) => {
         }));
 };
 
+updateSong = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const body = req.body;
+    console.log("updateSong body:", JSON.stringify(body));
+
+    if (!body) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide a body to update',
+        });
+    }
+
+    db.updateSong(req.params.id, body)
+        .then(song => res.status(200).json({ success: true, song }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not updated!'
+        }));
+};
+
+deleteSong = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    console.log("deleteSong with id:", req.params.id);
+
+    db.deleteSong(req.params.id)
+        .then(() => res.status(200).json({ success: true, message: 'Song deleted successfully' }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not deleted!'
+        }));
+};
+
 module.exports = {
     createPlaylist,
     deletePlaylist,
@@ -179,5 +221,7 @@ module.exports = {
     getPlaylists,
     updatePlaylist,
     addSong,
-    getSongs
+    getSongs,
+    updateSong,
+    deleteSong
 }

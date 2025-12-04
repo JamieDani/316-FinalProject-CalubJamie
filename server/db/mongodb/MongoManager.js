@@ -226,7 +226,9 @@ class MongoManager extends DatabaseManager {
         try {
             const query = {};
 
-            if (filters.title) query.title = filters.title;
+            if (filters.title) {
+                query.title = { $regex: filters.title, $options: 'i' };
+            }
             if (filters.artist) query.artist = filters.artist;
             if (filters.year) query.year = parseInt(filters.year);
 
@@ -234,6 +236,35 @@ class MongoManager extends DatabaseManager {
             return songs;
         } catch (err) {
             console.error("Error in MongoManager getSongs:", err);
+            throw err;
+        }
+    }
+
+    async updateSong(songId, updatedData) {
+        try {
+            const song = await Song.findById(songId);
+            if (!song) throw new Error("song not found");
+
+            if (updatedData.title !== undefined) song.title = updatedData.title;
+            if (updatedData.artist !== undefined) song.artist = updatedData.artist;
+            if (updatedData.year !== undefined) song.year = updatedData.year;
+            if (updatedData.youTubeId !== undefined) song.youTubeId = updatedData.youTubeId;
+
+            await song.save();
+            return song;
+        } catch (err) {
+            console.error("Error in MongoManager updateSong:", err);
+            throw err;
+        }
+    }
+
+    async deleteSong(songId) {
+        try {
+            const song = await Song.findByIdAndDelete(songId);
+            if (!song) throw new Error("song not found");
+            return;
+        } catch (err) {
+            console.error("Error in MongoManager deleteSong:", err);
             throw err;
         }
     }

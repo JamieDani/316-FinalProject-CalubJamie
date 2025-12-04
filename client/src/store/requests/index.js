@@ -124,6 +124,19 @@ export const getSongs = (filters = {}) => {
     });
 }
 
+export const updateSong = (id, songData) => {
+    return fetchWrapper(`${BASE_URL}/song/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(songData)
+    });
+}
+
+export const deleteSong = (id) => {
+    return fetchWrapper(`${BASE_URL}/song/${id}`, {
+        method: 'DELETE'
+    });
+}
+
 const apis = {
     createPlaylist,
     deletePlaylistById,
@@ -131,7 +144,9 @@ const apis = {
     getPlaylistPairs,
     updatePlaylistById,
     addSong,
-    getSongs
+    getSongs,
+    updateSong,
+    deleteSong
 }
 
 export default apis
