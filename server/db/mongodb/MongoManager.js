@@ -1,6 +1,7 @@
 const DatabaseManager = require("../DatabaseManager");
 const User = require('../../models/mongodb/user-model')
 const Playlist = require('../../models/mongodb/playlist-model')
+const Song = require('../../models/mongodb/song-model')
 
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
@@ -176,29 +177,68 @@ class MongoManager extends DatabaseManager {
         try {
             const playlist = await Playlist.findById(playlistId);
             if (!playlist) throw new Error("playlist not found");
-    
+
             const owner = await User.findOne({ email: playlist.ownerEmail });
             if (!owner) throw new Error("user not found");
-    
+
             if (owner._id.toString() !== userId.toString()) {
                 throw new Error("authentication error");
             }
-    
+
             if (updatedData.playlist?.name !== undefined)
                 playlist.name = updatedData.playlist.name;
-    
+
             if (updatedData.playlist?.songs !== undefined)
                 playlist.songs = updatedData.playlist.songs;
-    
+
             await playlist.save();
-    
+
             return playlist;
         } catch (err) {
             throw err;
         }
     }
-    
-    
+
+    async addSong(title, artist, year, youTubeId, ownerUsername, ownerEmail) {
+        try {
+            console.log("MongoManager addSong called");
+            const newSong = new Song({
+                title,
+                artist,
+                year,
+                youTubeId,
+                ownerUsername,
+                ownerEmail,
+                numPlaylists: 0,
+                numListeners: 0
+            });
+            console.log("New song object created:", newSong);
+            await newSong.save();
+            console.log("Song saved successfully:", newSong);
+            return newSong;
+        } catch (err) {
+            console.error("Error in MongoManager addSong:", err);
+            throw err;
+        }
+    }
+
+    async getSongs(filters = {}) {
+        try {
+            const query = {};
+
+            if (filters.title) query.title = filters.title;
+            if (filters.artist) query.artist = filters.artist;
+            if (filters.year) query.year = parseInt(filters.year);
+
+            const songs = await Song.find(query);
+            return songs;
+        } catch (err) {
+            console.error("Error in MongoManager getSongs:", err);
+            throw err;
+        }
+    }
+
+
 }
 
 module.exports = MongoManager;

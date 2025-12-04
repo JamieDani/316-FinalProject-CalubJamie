@@ -9,6 +9,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -110,14 +111,32 @@ export default function AppBanner() {
         <Box sx={{flexGrow: 1}}>
             <AppBar position="static">
                 <Toolbar>
-                    <Typography                        
+                    <Typography
                         variant="h4"
                         noWrap
                         component="div"
-                        sx={{ display: { xs: 'none', sm: 'block' } }}                        
+                        sx={{ display: { xs: 'none', sm: 'block' } }}
                     >
                         <Link onClick={handleHouseClick} style={{ textDecoration: 'none', color: 'white' }} to='/'>⌂</Link>
                     </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, ml: 4 }}>
+                        <Button
+                            color="inherit"
+                            component={Link}
+                            to="/playlists/"
+                            sx={{ fontSize: '1rem' }}
+                        >
+                            Playlists
+                        </Button>
+                        <Button
+                            color="inherit"
+                            component={Link}
+                            to="/song-catalog/"
+                            sx={{ fontSize: '1rem' }}
+                        >
+                            Song Catalog
+                        </Button>
+                    </Box>
                     <Box sx={{ flexGrow: 1 }}>{editToolbar}</Box>
                     <Box sx={{ height: "90px", display: { xs: 'none', md: 'flex' } }}>
                         <IconButton

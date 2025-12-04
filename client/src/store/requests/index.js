@@ -95,12 +95,43 @@ export const updatePlaylistById = (id, playlist) => {
     });
 }
 
+export const addSong = (title, artist, year, youTubeId, ownerUsername, ownerEmail) => {
+    return fetchWrapper(`${BASE_URL}/song`, {
+        method: 'POST',
+        body: JSON.stringify({
+            title,
+            artist,
+            year,
+            youTubeId,
+            ownerUsername,
+            ownerEmail
+        })
+    });
+}
+
+export const getSongs = (filters = {}) => {
+    const queryParams = new URLSearchParams();
+
+    if (filters.title) queryParams.append('title', filters.title);
+    if (filters.artist) queryParams.append('artist', filters.artist);
+    if (filters.year) queryParams.append('year', filters.year);
+
+    const queryString = queryParams.toString();
+    const url = queryString ? `${BASE_URL}/songs?${queryString}` : `${BASE_URL}/songs`;
+
+    return fetchWrapper(url, {
+        method: 'GET'
+    });
+}
+
 const apis = {
     createPlaylist,
     deletePlaylistById,
     getPlaylistById,
     getPlaylistPairs,
-    updatePlaylistById
+    updatePlaylistById,
+    addSong,
+    getSongs
 }
 
 export default apis

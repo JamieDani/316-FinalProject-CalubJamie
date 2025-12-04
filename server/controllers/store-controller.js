@@ -123,11 +123,61 @@ updatePlaylist = async (req, res) => {
         }));
 };
 
+addSong = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const body = req.body;
+    console.log("addSong body:", JSON.stringify(body));
+
+    if (!body) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide a Song',
+        });
+    }
+
+    db.addSong(body.title, body.artist, body.year, body.youTubeId, body.ownerUsername, body.ownerEmail)
+        .then(song => res.status(201).json({ success: true, song }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song Not Created!'
+        }));
+};
+
+getSongs = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const filters = {
+        title: req.query.title,
+        artist: req.query.artist,
+        year: req.query.year
+    };
+
+    console.log("getSongs filters:", JSON.stringify(filters));
+
+    db.getSongs(filters)
+        .then(songs => res.status(200).json({ success: true, songs }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error retrieving songs'
+        }));
+};
+
 module.exports = {
     createPlaylist,
     deletePlaylist,
     getPlaylistById,
     getPlaylistPairs,
     getPlaylists,
-    updatePlaylist
+    updatePlaylist,
+    addSong,
+    getSongs
 }
