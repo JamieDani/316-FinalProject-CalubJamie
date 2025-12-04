@@ -10,7 +10,8 @@ export const AuthActionType = {
     GET_LOGGED_IN: "GET_LOGGED_IN",
     LOGIN_USER: "LOGIN_USER",
     LOGOUT_USER: "LOGOUT_USER",
-    REGISTER_USER: "REGISTER_USER"
+    REGISTER_USER: "REGISTER_USER",
+    UPDATE_USER: "UPDATE_USER"
 }
 
 function AuthContextProvider(props) {
@@ -56,6 +57,13 @@ function AuthContextProvider(props) {
                     errorMessage: payload.errorMessage
                 })
             }
+            case AuthActionType.UPDATE_USER: {
+                return setAuth({
+                    user: payload.user,
+                    loggedIn: payload.loggedIn,
+                    errorMessage: payload.errorMessage
+                })
+            }
             default:
                 return auth;
         }
@@ -74,10 +82,10 @@ function AuthContextProvider(props) {
         }
     }
 
-    auth.registerUser = async function(firstName, lastName, email, password, passwordVerify) {
+    auth.registerUser = async function(username, email, password, passwordVerify, profilePicture) {
         console.log("REGISTERING USER");
-        try{   
-            const response = await authRequestSender.registerUser(firstName, lastName, email, password, passwordVerify);   
+        try{
+            const response = await authRequestSender.registerUser(username, email, password, passwordVerify, profilePicture);
             if (response.status === 200) {
                 console.log("Registered Sucessfully");
                 authReducer({
@@ -142,11 +150,40 @@ function AuthContextProvider(props) {
         }
     }
 
+    auth.updateUser = async function(username, email, password, passwordVerify, profilePicture) {
+        console.log("UPDATING USER");
+        try {
+            const response = await authRequestSender.updateUser(username, email, password, passwordVerify, profilePicture);
+            if (response.status === 200) {
+                console.log("Updated Successfully");
+                authReducer({
+                    type: AuthActionType.UPDATE_USER,
+                    payload: {
+                        user: response.data.user,
+                        loggedIn: true,
+                        errorMessage: null
+                    }
+                })
+                history.push("/");
+                console.log("USER UPDATED");
+            }
+        } catch(error) {
+            authReducer({
+                type: AuthActionType.UPDATE_USER,
+                payload: {
+                    user: auth.user,
+                    loggedIn: auth.loggedIn,
+                    errorMessage: error.response.data.errorMessage
+                }
+            })
+        }
+    }
+
     auth.getUserInitials = function() {
         let initials = "";
-        if (auth.user) {
-            initials += auth.user.firstName.charAt(0);
-            initials += auth.user.lastName.charAt(0);
+        if (auth.user && auth.user.username) {
+            // Take first two characters of username, or just first if username is short
+            initials = auth.user.username.substring(0, Math.min(2, auth.user.username.length)).toUpperCase();
         }
         console.log("user initials: " + initials);
         return initials;

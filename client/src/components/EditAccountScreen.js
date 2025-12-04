@@ -1,4 +1,5 @@
 import { useContext, useState } from 'react';
+import { useHistory } from 'react-router-dom'
 import AuthContext from '../auth'
 import MUIErrorModal from './MUIErrorModal'
 import Copyright from './Copyright'
@@ -14,10 +15,11 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { IconButton, Alert } from '@mui/material';
+import { Stack, IconButton, Alert } from '@mui/material';
 
-export default function RegisterScreen() {
+export default function EditAccountScreen() {
     const { auth } = useContext(AuthContext);
+    const history = useHistory();
     const [profileImage, setProfileImage] = useState(null);
     const [profileImageBase64, setProfileImageBase64] = useState(null);
     const [imageError, setImageError] = useState('');
@@ -48,7 +50,7 @@ export default function RegisterScreen() {
                 setImageError(`Image must be exactly 200x200 pixels. Your image is ${img.width}x${img.height}`);
                 setProfileImage(null);
                 setProfileImageBase64(null);
-                URL.revokeObjectURL(objectUrl); 
+                URL.revokeObjectURL(objectUrl);
             }
         };
 
@@ -64,13 +66,17 @@ export default function RegisterScreen() {
     const handleSubmit = (event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        auth.registerUser(
+        auth.updateUser(
             formData.get('username'),
             formData.get('email'),
             formData.get('password'),
             formData.get('passwordVerify'),
             profileImageBase64
         );
+    };
+
+    const handleCancel = () => {
+        history.push('/');
     };
 
     let modalJSX = ""
@@ -92,7 +98,7 @@ export default function RegisterScreen() {
                     }}
                 >
                     <Box sx={{ position: 'relative' }}>
-                        <Avatar
+                        <Avatar 
                             sx={{ m: 1, bgcolor: 'secondary.main', width: 80, height: 80 }}
                             src={profileImage || undefined}
                         >
@@ -119,15 +125,15 @@ export default function RegisterScreen() {
                             />
                         </IconButton>
                     </Box>
-
+                    
                     {imageError && (
                         <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
                             {imageError}
                         </Alert>
                     )}
-
+                    
                     <Typography component="h1" variant="h5" sx={{ mt: 2 }}>
-                        Sign up
+                        Edit Account
                     </Typography>
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
@@ -175,21 +181,24 @@ export default function RegisterScreen() {
                                 />
                             </Grid>
                         </Grid>
+                        <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
                         <Button
-                            type="submit"
                             fullWidth
                             variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
+                            type="submit"
                         >
-                            Sign Up
+                            Complete
                         </Button>
-                        <Grid container justifyContent="flex-end">
-                            <Grid item>
-                                <Link href="/login/" variant="body2">
-                                    Already have an account? Sign in
-                                </Link>
-                            </Grid>
-                        </Grid>
+
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            type="button"
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </Button>
+                        </Stack>
                     </Box>
                 </Box>
                 <Copyright sx={{ mt: 5 }} />

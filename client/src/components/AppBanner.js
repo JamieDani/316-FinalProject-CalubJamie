@@ -7,6 +7,7 @@ import EditToolbar from './EditToolbar'
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
@@ -74,6 +75,7 @@ export default function AppBanner() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
+            <MenuItem><Link to='/edit-account/'>Edit Account</Link></MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>        
 
@@ -87,12 +89,21 @@ export default function AppBanner() {
     }
     
     function getAccountMenu(loggedIn) {
-        let userInitials = auth.getUserInitials();
-        console.log("userInitials: " + userInitials);
-        if (loggedIn) 
-            return <div>{userInitials}</div>;
-        else
+        if (loggedIn) {
+            const userInitials = auth.getUserInitials();
+            const profilePicture = auth.user?.profilePicture;
+
+            return (
+                <Avatar
+                    src={profilePicture || undefined}
+                    sx={{ width: 40, height: 40 }}
+                >
+                    {!profilePicture && userInitials}
+                </Avatar>
+            );
+        } else {
             return <AccountCircle />;
+        }
     }
 
     return (

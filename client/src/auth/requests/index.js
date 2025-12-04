@@ -78,15 +78,28 @@ export const logoutUser = () => {
     });
 }
 
-export const registerUser = (firstName, lastName, email, password, passwordVerify) => {
+export const registerUser = (username, email, password, passwordVerify, profilePicture) => {
     return fetchWrapper(`${BASE_URL}/register/`, {
         method: 'POST',
         body: JSON.stringify({
-            firstName : firstName,
-            lastName : lastName,
+            username : username,
             email : email,
             password : password,
-            passwordVerify : passwordVerify
+            passwordVerify : passwordVerify,
+            profilePicture : profilePicture
+        })
+    });
+}
+
+export const updateUser = (username, email, password, passwordVerify, profilePicture) => {
+    return fetchWrapper(`${BASE_URL}/update/`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            username : username,
+            email : email,
+            password : password,
+            passwordVerify : passwordVerify,
+            profilePicture : profilePicture
         })
     });
 }
@@ -95,7 +108,8 @@ const apis = {
     getLoggedIn,
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    updateUser
 }
 
 export default apis

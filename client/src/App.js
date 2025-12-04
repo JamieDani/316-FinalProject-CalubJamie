@@ -5,6 +5,7 @@ import { AuthContextProvider } from './auth';
 import { GlobalStoreContextProvider } from './store'
 import {
     AppBanner,
+    EditAccountScreen,
     HomeWrapper,
     LoginScreen,
     RegisterScreen,
@@ -28,6 +29,7 @@ const App = () => {
                         <Route path="/login/" exact component={LoginScreen} />
                         <Route path="/register/" exact component={RegisterScreen} />
                         <Route path="/playlist/:id" exact component={WorkspaceScreen} />
+                        <Route path="/edit-account/" exact component={EditAccountScreen} />
                     </Switch>
                     <Statusbar />
                 </GlobalStoreContextProvider>

@@ -26,8 +26,8 @@ class MongoManager extends DatabaseManager {
         return playlist._id
     }
 
-    async createUser(firstName, lastName, email, passwordHash) {
-        const newUser = new User({firstName, lastName, email, passwordHash});
+    async createUser(username, email, passwordHash, profilePicture) {
+        const newUser = new User({username, email, passwordHash, profilePicture});
         await newUser.save();
         return newUser
     }
@@ -38,6 +38,23 @@ class MongoManager extends DatabaseManager {
 
     async getUserByEmail(email) {
         return await User.findOne({ email: email })
+    }
+
+    async updateUser(userId, username, email, passwordHash, profilePicture) {
+        try {
+            const user = await User.findById(userId);
+            if (!user) throw new Error("user not found");
+
+            if (username !== undefined) user.username = username;
+            if (email !== undefined) user.email = email;
+            if (passwordHash !== undefined) user.passwordHash = passwordHash;
+            if (profilePicture !== undefined) user.profilePicture = profilePicture;
+
+            await user.save();
+            return user;
+        } catch (err) {
+            throw err;
+        }
     }
 
     // returns playlist on success and null on failure
