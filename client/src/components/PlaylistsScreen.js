@@ -1,8 +1,46 @@
 import { Box, Typography, TextField, Button, Divider, Stack } from '@mui/material';
+import { useState, useContext } from 'react';
+import AuthContext from '../auth';
+import storeRequestSender from '../store/requests';
+import EditPlaylistModal from './EditPlaylistModal';
 
 const PlaylistsScreen = () => {
+    const { auth } = useContext(AuthContext);
+    const [isEditPlaylistModalOpen, setIsEditPlaylistModalOpen] = useState(false);
+    const [currentPlaylist, setCurrentPlaylist] = useState(null);
+
+    const handleAddPlaylist = async () => {
+        if (!auth.user) {
+            console.error("No user logged in");
+            return;
+        }
+
+        try {
+            const response = await storeRequestSender.createPlaylist(
+                auth.user.username,
+                auth.user.email
+            );
+            if (response.data.success) {
+                setCurrentPlaylist(response.data.playlist);
+                setIsEditPlaylistModalOpen(true);
+            }
+        } catch (error) {
+            console.error("Error creating playlist:", error);
+        }
+    };
+
+    const handleClosePlaylistModal = () => {
+        setIsEditPlaylistModalOpen(false);
+        setCurrentPlaylist(null);
+    };
 
     return (
+        <>
+            <EditPlaylistModal
+                open={isEditPlaylistModalOpen}
+                onClose={handleClosePlaylistModal}
+                playlist={currentPlaylist}
+            />
         <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#ffe4e1' }}>
             <Box sx={{
                 flex: 1,
@@ -58,15 +96,25 @@ const PlaylistsScreen = () => {
             <Box sx={{
                 flex: 1,
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                flexDirection: 'column',
                 padding: 4
             }}>
-                <Typography variant="h5">
-                    Hello world
-                </Typography>
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Typography variant="h5">
+                        Hello world
+                    </Typography>
+                </Box>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleAddPlaylist}
+                    sx={{ alignSelf: 'flex-start' }}
+                >
+                    Add Playlist
+                </Button>
             </Box>
         </Box>
+        </>
     )
 }
 

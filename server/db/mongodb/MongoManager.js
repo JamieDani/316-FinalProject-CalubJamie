@@ -59,33 +59,31 @@ class MongoManager extends DatabaseManager {
     }
 
     // returns playlist on success and null on failure
-    createPlaylist(userId, name, ownerEmail, songs) {
-        return new Promise((resolve, reject) => {
+    async createPlaylist(userId, ownerUsername, ownerEmail) {
+        try {
+            const user = await User.findById(userId);
+            if (!user) throw new Error("user not found");
+
+            const existingPlaylists = await Playlist.find({ ownerEmail: ownerEmail });
+            const untitledCount = existingPlaylists.filter(p => p.name.startsWith("Untitled")).length;
+            const playlistName = `Untitled${untitledCount}`;
+
             const playlist = new Playlist({
-                name: name,
+                name: playlistName,
+                ownerUsername: ownerUsername,
                 ownerEmail: ownerEmail,
-                songs: songs
+                songs: []
             });
 
-            console.log("playlist: " + playlist.toString());
-            if (!playlist) { return reject(new Error("invalid playlist object")); }
+            await playlist.save();
 
-            User.findOne({ _id: userId }, (err, user) => {
-                if (err) { return reject(err) }
-                if (!user) { return reject(new Error("user not found")) }
-                console.log("user found: " + JSON.stringify(user));
-                user.playlists.push(playlist._id);
-                user
-                    .save()
-                    .then(() => {
-                        playlist
-                            .save()
-                            .then(() => {
-                                resolve(playlist)
-                            }).catch(err => reject(err))
-                    }).catch(err => reject(err));
-            })
-        })
+            user.playlists.push(playlist._id);
+            await user.save();
+
+            return playlist;
+        } catch (err) {
+            throw err;
+        }
     }
 
     async deletePlaylist(userId, playlistId) {
@@ -192,6 +190,29 @@ class MongoManager extends DatabaseManager {
                 playlist.songs = updatedData.playlist.songs;
 
             await playlist.save();
+
+            return playlist;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async addSongToPlaylist(userId, playlistId, songId) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            const owner = await User.findOne({ email: playlist.ownerEmail });
+            if (!owner) throw new Error("user not found");
+
+            if (owner._id.toString() !== userId.toString()) {
+                throw new Error("authentication error");
+            }
+
+            if (!playlist.songs.includes(songId)) {
+                playlist.songs.push(songId);
+                await playlist.save();
+            }
 
             return playlist;
         } catch (err) {

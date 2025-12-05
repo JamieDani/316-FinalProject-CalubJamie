@@ -5,11 +5,13 @@ import SongCard from './SongCard';
 import YouTubePlayer from './YouTubePlayer';
 import AddSongModal from './AddSongModal';
 import DeleteSongConfirmModal from './DeleteSongConfirmModal';
+import AddToPlaylistModal from './AddToPlaylistModal';
 
 const SongCatalogScreen = () => {
     const [isAddSongModalOpen, setIsAddSongModalOpen] = useState(false);
     const [isEditSongModalOpen, setIsEditSongModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isAddToPlaylistModalOpen, setIsAddToPlaylistModalOpen] = useState(false);
     const [selectedSong, setSelectedSong] = useState(null);
     const [songs, setSongs] = useState([]);
     const [titleFilter, setTitleFilter] = useState("");
@@ -86,11 +88,22 @@ const SongCatalogScreen = () => {
         }
     };
 
+    const handleAddToPlaylist = (song) => {
+        setSelectedSong(song);
+        setIsAddToPlaylistModalOpen(true);
+    };
+
+    const handleCloseAddToPlaylistModal = () => {
+        setIsAddToPlaylistModalOpen(false);
+        setSelectedSong(null);
+    };
+
     return (
         <>
             <AddSongModal open={isAddSongModalOpen} onClose={handleCloseAddSongModal} mode="add" />
             <AddSongModal open={isEditSongModalOpen} onClose={handleCloseEditSongModal} mode="edit" song={selectedSong} />
             <DeleteSongConfirmModal open={isDeleteModalOpen} onClose={handleCloseDeleteModal} song={selectedSong} />
+            <AddToPlaylistModal open={isAddToPlaylistModalOpen} onClose={handleCloseAddToPlaylistModal} song={selectedSong} />
         <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#ffe4e1' }}>
             <Box sx={{
                 flex: 1,
@@ -170,6 +183,7 @@ const SongCatalogScreen = () => {
                             song={song}
                             onEdit={handleEditSong}
                             onDelete={handleDeleteSong}
+                            onAddToPlaylist={handleAddToPlaylist}
                         />
                     ))}
                 </Box>

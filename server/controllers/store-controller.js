@@ -21,13 +21,13 @@ createPlaylist = (req, res) => {
     if (!body) {
         return res.status(400).json({
             success: false,
-            error: 'You must provide a Playlist',
+            error: 'You must provide owner info',
         })
     }
 
-    db.createPlaylist(req.userId, body.name, body.ownerEmail, body.songs)
-    .then(playlist => res.status(201).json({ playlist }))
-    .catch(err => res.status(400).json({ errorMessage: err.message || 'Playlist Not Created!' }));
+    db.createPlaylist(req.userId, body.ownerUsername, body.ownerEmail)
+    .then(playlist => res.status(201).json({ success: true, playlist }))
+    .catch(err => res.status(400).json({ success: false, errorMessage: err.message || 'Playlist Not Created!' }));
 
 }
 
@@ -120,6 +120,34 @@ updatePlaylist = async (req, res) => {
         .catch(err => res.status(400).json({
             success: false,
             errorMessage: err.message || 'Playlist not updated!'
+        }));
+};
+
+addSongToPlaylist = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const body = req.body;
+    if (!body || !body.songId) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide a songId',
+        });
+    }
+
+    console.log("addSongToPlaylist songId:", body.songId);
+
+    db.addSongToPlaylist(req.userId, req.params.id, body.songId)
+        .then(updated => res.status(200).json({
+            success: true,
+            message: 'Song added to playlist!',
+        }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not added to playlist!'
         }));
 };
 
@@ -220,6 +248,7 @@ module.exports = {
     getPlaylistPairs,
     getPlaylists,
     updatePlaylist,
+    addSongToPlaylist,
     addSong,
     getSongs,
     updateSong,

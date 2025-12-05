@@ -3,7 +3,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useState } from 'react';
 
 function SongCard(props) {
-    const { song, onEdit, onDelete } = props;
+    const { song, onEdit, onDelete, onAddToPlaylist } = props;
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
@@ -24,6 +24,11 @@ function SongCard(props) {
     const handleDelete = () => {
         handleMenuClose();
         onDelete(song);
+    };
+
+    const handleAddToPlaylist = () => {
+        handleMenuClose();
+        onAddToPlaylist(song);
     };
 
     return (
@@ -59,6 +64,7 @@ function SongCard(props) {
             >
                 <MenuItem onClick={handleEdit}>Edit Song</MenuItem>
                 <MenuItem onClick={handleDelete}>Remove Song from Catalog</MenuItem>
+                <MenuItem onClick={handleAddToPlaylist}>Add Song To Playlist</MenuItem>
             </Menu>
 
             <Typography variant="body1" sx={{ fontWeight: 500, mb: 1, pr: 5 }}>

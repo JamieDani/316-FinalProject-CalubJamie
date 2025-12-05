@@ -57,13 +57,12 @@ const fetchWrapper = async (url, options = {}) => {
 }
 
 
-export const createPlaylist = (newListName, newSongs, userEmail) => {
+export const createPlaylist = (ownerUsername, ownerEmail) => {
     return fetchWrapper(`${BASE_URL}/playlist/`, {
         method: 'POST',
         body: JSON.stringify({
-            name: newListName,
-            songs: newSongs,
-            ownerEmail: userEmail
+            ownerUsername,
+            ownerEmail
         })
     });
 }
@@ -91,6 +90,15 @@ export const updatePlaylistById = (id, playlist) => {
         method: 'PUT',
         body: JSON.stringify({
             playlist : playlist
+        })
+    });
+}
+
+export const addSongToPlaylist = (playlistId, songId) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/add-song`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            songId
         })
     });
 }
@@ -143,6 +151,7 @@ const apis = {
     getPlaylistById,
     getPlaylistPairs,
     updatePlaylistById,
+    addSongToPlaylist,
     addSong,
     getSongs,
     updateSong,
