@@ -139,17 +139,19 @@ class MongoManager extends DatabaseManager {
         try {
             const user = await User.findOne({ _id: userId });
             if (!user) throw new Error("user not found");
-    
+
             const playlists = await Playlist.find({ ownerEmail: user.email });
             if (!playlists) {
                 throw new Error("no playlists found");
             }
-    
+
             const pairs = playlists.map(list => ({
                 _id: list._id,
-                name: list.name
+                name: list.name,
+                ownerEmail: list.ownerEmail,
+                ownerUsername: list.ownerUsername
             }));
-    
+
             return pairs;
         } catch (err) {
             throw err;
@@ -286,6 +288,30 @@ class MongoManager extends DatabaseManager {
             return;
         } catch (err) {
             console.error("Error in MongoManager deleteSong:", err);
+            throw err;
+        }
+    }
+
+    async getSongsOfPlaylist(playlistId) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            const songs = await Song.find({ _id: { $in: playlist.songs } });
+            return songs;
+        } catch (err) {
+            console.error("Error in MongoManager getSongsOfPlaylist:", err);
+            throw err;
+        }
+    }
+
+    async getUserProfilePictureByEmail(email) {
+        try {
+            const user = await User.findOne({ email: email });
+            if (!user) throw new Error("user not found");
+            return user.profilePicture || null;
+        } catch (err) {
+            console.error("Error in MongoManager getUserProfilePictureByEmail:", err);
             throw err;
         }
     }

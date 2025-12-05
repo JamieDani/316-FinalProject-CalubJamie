@@ -145,6 +145,18 @@ export const deleteSong = (id) => {
     });
 }
 
+export const getSongsOfPlaylist = (playlistId) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/songs`, {
+        method: 'GET'
+    });
+}
+
+export const getUserProfilePictureByEmail = (email) => {
+    return fetchWrapper(`${BASE_URL}/user/profile-picture?email=${encodeURIComponent(email)}`, {
+        method: 'GET'
+    });
+}
+
 const apis = {
     createPlaylist,
     deletePlaylistById,
@@ -155,7 +167,9 @@ const apis = {
     addSong,
     getSongs,
     updateSong,
-    deleteSong
+    deleteSong,
+    getSongsOfPlaylist,
+    getUserProfilePictureByEmail
 }
 
 export default apis

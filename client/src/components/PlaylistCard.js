@@ -1,117 +1,142 @@
-import { useContext, useState } from 'react'
-import { GlobalStoreContext } from '../store'
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-import ListItem from '@mui/material/ListItem';
-import TextField from '@mui/material/TextField';
+import { Box, Typography, Button, Avatar, IconButton, Collapse } from '@mui/material';
+import { useState } from 'react';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-/*
-    This is a card in our list of top 5 lists. It lets select
-    a list for editing and it has controls for changing its 
-    name or deleting it.
-    
-    @author McKilla Gorilla
-*/
-function PlaylistCard(props) {
-    const { store } = useContext(GlobalStoreContext);
-    const [editActive, setEditActive] = useState(false);
-    const [text, setText] = useState("");
-    const { idNamePair } = props;
+function PlaylistCard({ playlist, songs = [], onDelete }) {
+    const [expanded, setExpanded] = useState(false);
 
-    function handleLoadList(event, id) {
-        console.log("handleLoadList for " + id);
-        if (!event.target.disabled) {
-            let _id = event.target.id;
-            if (_id.indexOf('list-card-text-') >= 0)
-                _id = ("" + _id).substring("list-card-text-".length);
+    const handleToggleExpand = () => {
+        setExpanded(!expanded);
+    };
 
-            console.log("load " + event.target.id);
-
-            // CHANGE THE CURRENT LIST
-            store.setCurrentList(id);
+    const handleDelete = () => {
+        if (onDelete) {
+            onDelete(playlist);
         }
-    }
+    };
 
-    function handleToggleEdit(event) {
-        event.stopPropagation();
-        toggleEdit();
-    }
+    const getInitials = (username) => {
+        if (!username) return '?';
+        return username.substring(0, 2).toUpperCase();
+    };
 
-    function toggleEdit() {
-        let newActive = !editActive;
-        if (newActive) {
-            store.setIsListNameEditActive();
-        }
-        setEditActive(newActive);
-    }
-
-    async function handleDeleteList(event, id) {
-        event.stopPropagation();
-        //let _id = event.target.id;
-        //_id = ("" + _id).substring("delete-list-".length);
-        store.markListForDeletion(id);
-    }
-
-    function handleKeyPress(event) {
-        if (event.code === "Enter") {
-            let id = event.target.id.substring("list-".length);
-            store.changeListName(id, text);
-            toggleEdit();
-        }
-    }
-    function handleUpdateText(event) {
-        setText(event.target.value);
-    }
-
-    let cardElement =
-        <ListItem
-            id={idNamePair._id}
-            key={idNamePair._id}
-            sx={{borderRadius:"25px", p: "10px", bgcolor: '#8000F00F', marginTop: '15px', display: 'flex', /*p: 1*/ }}
-            style={{transform:"translate(1%,0%)", width: '98%', fontSize: '48pt' }}
-            button
-            onClick={(event) => {
-                handleLoadList(event, idNamePair._id)
+    return (
+        <Box
+            sx={{
+                border: '1px solid #ccc',
+                borderRadius: 1,
+                padding: 1.5,
+                marginBottom: 1.5,
+                backgroundColor: '#f9f9f9'
             }}
         >
-            <Box sx={{ p: 1, flexGrow: 1 }}>{idNamePair.name}</Box>
-            <Box sx={{ p: 1 }}>
-                <IconButton onClick={handleToggleEdit} aria-label='edit'>
-                    <EditIcon style={{fontSize:'48pt'}} />
-                </IconButton>
-            </Box>
-            <Box sx={{ p: 1 }}>
-                <IconButton onClick={(event) => {
-                        handleDeleteList(event, idNamePair._id)
-                    }} aria-label='delete'>
-                    <DeleteIcon style={{fontSize:'48pt'}} />
-                </IconButton>
-            </Box>
-        </ListItem>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <Avatar
+                    sx={{
+                        width: 50,
+                        height: 50,
+                        backgroundColor: '#8932CC',
+                        fontSize: '18px'
+                    }}
+                    src={playlist.ownerProfilePicture || undefined}
+                >
+                    {!playlist.ownerProfilePicture && getInitials(playlist.ownerUsername)}
+                </Avatar>
 
-    if (editActive) {
-        cardElement =
-            <TextField
-                margin="normal"
-                required
-                fullWidth
-                id={"list-" + idNamePair._id}
-                label="Playlist Name"
-                name="name"
-                autoComplete="Playlist Name"
-                className='list-card'
-                onKeyPress={handleKeyPress}
-                onChange={handleUpdateText}
-                defaultValue={idNamePair.name}
-                inputProps={{style: {fontSize: 48}}}
-                InputLabelProps={{style: {fontSize: 24}}}
-                autoFocus
-            />
-    }
-    return (
-        cardElement
+                <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 0.25 }}>
+                        {playlist.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.25, display: 'block' }}>
+                        {playlist.ownerUsername}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                        {playlist.numListeners || 0} listeners
+                    </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            onClick={handleDelete}
+                            sx={{
+                                backgroundColor: '#dc3545',
+                                '&:hover': { backgroundColor: '#c82333' },
+                                minWidth: '60px',
+                                fontSize: '0.7rem',
+                                padding: '4px 8px'
+                            }}
+                        >
+                            Delete
+                        </Button>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            sx={{
+                                backgroundColor: '#007bff',
+                                '&:hover': { backgroundColor: '#0056b3' },
+                                minWidth: '60px',
+                                fontSize: '0.7rem',
+                                padding: '4px 8px'
+                            }}
+                        >
+                            Edit
+                        </Button>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            sx={{
+                                backgroundColor: '#28a745',
+                                '&:hover': { backgroundColor: '#218838' },
+                                minWidth: '60px',
+                                fontSize: '0.7rem',
+                                padding: '4px 8px'
+                            }}
+                        >
+                            Copy
+                        </Button>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            sx={{
+                                backgroundColor: '#e83e8c',
+                                '&:hover': { backgroundColor: '#d62976' },
+                                minWidth: '60px',
+                                fontSize: '0.7rem',
+                                padding: '4px 8px'
+                            }}
+                        >
+                            Play
+                        </Button>
+                    </Box>
+                </Box>
+
+                <IconButton onClick={handleToggleExpand} size="small">
+                    {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+            </Box>
+
+            <Collapse in={expanded}>
+                <Box sx={{ mt: 2, pl: 9 }}>
+                    {songs && songs.length > 0 ? (
+                        songs.map((song, index) => (
+                            <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
+                                {index + 1}. {song.title} by {song.artist} ({song.year})
+                            </Typography>
+                        ))
+                    ) : (
+                        <Typography variant="body2" color="text.secondary">
+                            No songs in this playlist
+                        </Typography>
+                    )}
+                </Box>
+            </Collapse>
+        </Box>
     );
 }
 

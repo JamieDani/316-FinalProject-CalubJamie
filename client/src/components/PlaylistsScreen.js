@@ -1,13 +1,18 @@
 import { Box, Typography, TextField, Button, Divider, Stack } from '@mui/material';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import AuthContext from '../auth';
 import storeRequestSender from '../store/requests';
 import EditPlaylistModal from './EditPlaylistModal';
+import PlaylistCard from './PlaylistCard';
+import DeletePlaylistConfirmModal from './DeletePlaylistConfirmModal';
 
 const PlaylistsScreen = () => {
     const { auth } = useContext(AuthContext);
     const [isEditPlaylistModalOpen, setIsEditPlaylistModalOpen] = useState(false);
+    const [isDeletePlaylistModalOpen, setIsDeletePlaylistModalOpen] = useState(false);
     const [currentPlaylist, setCurrentPlaylist] = useState(null);
+    const [playlistToDelete, setPlaylistToDelete] = useState(null);
+    const [playlists, setPlaylists] = useState([]);
 
     const handleAddPlaylist = async () => {
         if (!auth.user) {
@@ -32,6 +37,55 @@ const PlaylistsScreen = () => {
     const handleClosePlaylistModal = () => {
         setIsEditPlaylistModalOpen(false);
         setCurrentPlaylist(null);
+        fetchPlaylists();
+    };
+
+    const handleDeletePlaylist = (playlist) => {
+        setPlaylistToDelete(playlist);
+        setIsDeletePlaylistModalOpen(true);
+    };
+
+    const handleCloseDeletePlaylistModal = (deleted) => {
+        setIsDeletePlaylistModalOpen(false);
+        setPlaylistToDelete(null);
+        if (deleted) {
+            fetchPlaylists();
+        }
+    };
+
+    useEffect(() => {
+        fetchPlaylists();
+    }, []);
+
+    const fetchPlaylists = async () => {
+        try {
+            const response = await storeRequestSender.getPlaylistPairs();
+            if (response.data.success) {
+                const playlistsWithSongs = await Promise.all(
+                    response.data.idNamePairs.map(async (playlist) => {
+                        try {
+                            const songsResponse = await storeRequestSender.getSongsOfPlaylist(playlist._id);
+                            const profilePictureResponse = await storeRequestSender.getUserProfilePictureByEmail(playlist.ownerEmail);
+                            return {
+                                ...playlist,
+                                songs: songsResponse.data.success ? songsResponse.data.songs : [],
+                                ownerProfilePicture: profilePictureResponse.data.success ? profilePictureResponse.data.profilePicture : null
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching data for playlist ${playlist._id}:`, error);
+                            return {
+                                ...playlist,
+                                songs: [],
+                                ownerProfilePicture: null
+                            };
+                        }
+                    })
+                );
+                setPlaylists(playlistsWithSongs);
+            }
+        } catch (error) {
+            console.error("Error fetching playlists:", error);
+        }
     };
 
     return (
@@ -40,6 +94,11 @@ const PlaylistsScreen = () => {
                 open={isEditPlaylistModalOpen}
                 onClose={handleClosePlaylistModal}
                 playlist={currentPlaylist}
+            />
+            <DeletePlaylistConfirmModal
+                open={isDeletePlaylistModalOpen}
+                onClose={handleCloseDeletePlaylistModal}
+                playlist={playlistToDelete}
             />
         <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#ffe4e1' }}>
             <Box sx={{
@@ -99,10 +158,15 @@ const PlaylistsScreen = () => {
                 flexDirection: 'column',
                 padding: 4
             }}>
-                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Typography variant="h5">
-                        Hello world
-                    </Typography>
+                <Box sx={{ flex: 1, overflowY: 'auto', mb: 2 }}>
+                    {playlists.map((playlist, index) => (
+                        <PlaylistCard
+                            key={playlist._id || index}
+                            playlist={playlist}
+                            songs={playlist.songs || []}
+                            onDelete={handleDeletePlaylist}
+                        />
+                    ))}
                 </Box>
                 <Button
                     variant="contained"

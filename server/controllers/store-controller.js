@@ -241,6 +241,40 @@ deleteSong = async (req, res) => {
         }));
 };
 
+getSongsOfPlaylist = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    console.log("getSongsOfPlaylist with id:", req.params.id);
+
+    db.getSongsOfPlaylist(req.params.id)
+        .then(songs => res.status(200).json({ success: true, songs }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error retrieving songs'
+        }));
+};
+
+getUserProfilePictureByEmail = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    console.log("getUserProfilePictureByEmail with email:", req.query.email);
+
+    db.getUserProfilePictureByEmail(req.query.email)
+        .then(profilePicture => res.status(200).json({ success: true, profilePicture }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error retrieving profile picture'
+        }));
+};
+
 module.exports = {
     createPlaylist,
     deletePlaylist,
@@ -252,5 +286,7 @@ module.exports = {
     addSong,
     getSongs,
     updateSong,
-    deleteSong
+    deleteSong,
+    getSongsOfPlaylist,
+    getUserProfilePictureByEmail
 }
