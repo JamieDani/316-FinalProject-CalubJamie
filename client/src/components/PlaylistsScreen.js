@@ -53,6 +53,11 @@ const PlaylistsScreen = () => {
         }
     };
 
+    const handleEditPlaylist = (playlist) => {
+        setCurrentPlaylist(playlist);
+        setIsEditPlaylistModalOpen(true);
+    };
+
     useEffect(() => {
         fetchPlaylists();
     }, []);
@@ -165,6 +170,7 @@ const PlaylistsScreen = () => {
                             playlist={playlist}
                             songs={playlist.songs || []}
                             onDelete={handleDeletePlaylist}
+                            onEdit={handleEditPlaylist}
                         />
                     ))}
                 </Box>

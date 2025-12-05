@@ -298,7 +298,15 @@ class MongoManager extends DatabaseManager {
             if (!playlist) throw new Error("playlist not found");
 
             const songs = await Song.find({ _id: { $in: playlist.songs } });
-            return songs;
+
+            const songMap = {};
+            songs.forEach(song => {
+                songMap[song._id.toString()] = song;
+            });
+
+            const orderedSongs = playlist.songs.map(songId => songMap[songId.toString()]).filter(song => song !== undefined);
+
+            return orderedSongs;
         } catch (err) {
             console.error("Error in MongoManager getSongsOfPlaylist:", err);
             throw err;

@@ -9,6 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
+import PlaylistSongCard from './PlaylistSongCard';
 
 const style = {
     position: 'absolute',
@@ -29,12 +30,64 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
     const history = useHistory();
     const [playlistTitle, setPlaylistTitle] = useState("Untitled Playlist");
     const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [songs, setSongs] = useState([]);
+    const [draggedIndex, setDraggedIndex] = useState(null);
 
     useEffect(() => {
         if (playlist) {
             setPlaylistTitle(playlist.name);
+            fetchSongs();
         }
     }, [playlist]);
+
+    const fetchSongs = async () => {
+        if (!playlist?._id) return;
+        try {
+            const response = await storeRequestSender.getSongsOfPlaylist(playlist._id);
+            if (response.data.success) {
+                setSongs(response.data.songs);
+            }
+        } catch (error) {
+            console.error("Error fetching songs:", error);
+            setSongs([]);
+        }
+    };
+
+    const handleDragStart = (index) => {
+        setDraggedIndex(index);
+    };
+
+    const handleDragOver = (e, index) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = async (e, dropIndex) => {
+        e.preventDefault();
+
+        if (draggedIndex === null || draggedIndex === dropIndex) {
+            return;
+        }
+
+        const newSongs = [...songs];
+        const [draggedSong] = newSongs.splice(draggedIndex, 1);
+        newSongs.splice(dropIndex, 0, draggedSong);
+
+        setSongs(newSongs);
+        setDraggedIndex(null);
+
+        const songIds = newSongs.map(song => song._id);
+        try {
+            await storeRequestSender.updatePlaylistById(playlist._id, {
+                songs: songIds
+            });
+        } catch (error) {
+            console.error("Error updating playlist order:", error);
+            fetchSongs();
+        }
+    };
+
+    const handleDragEnter = (index) => {
+    };
 
     const handleAddSong = () => {
         history.push('/song-catalog/');
@@ -80,8 +133,6 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
         }
         onClose();
     };
-
-    const placeholderSongs = [1, 2, 3, 4, 5];
 
     return (
         <Modal open={open} onClose={onClose}>
@@ -138,25 +189,23 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
                         backgroundColor: '#f9f9f9'
                     }}
                 >
-                    {placeholderSongs.map((song, index) => (
-                        <Box
-                            key={index}
-                            sx={{
-                                height: 60,
-                                backgroundColor: '#e0e0e0',
-                                border: '1px solid #999',
-                                borderRadius: 1,
-                                marginBottom: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: 2
-                            }}
-                        >
-                            <Typography variant="body1" color="text.secondary">
-                                Song {index + 1} - Placeholder
-                            </Typography>
-                        </Box>
-                    ))}
+                    {songs && songs.length > 0 ? (
+                        songs.map((song, index) => (
+                            <PlaylistSongCard
+                                key={song._id || index}
+                                song={song}
+                                index={index}
+                                onDragStart={handleDragStart}
+                                onDragOver={handleDragOver}
+                                onDrop={handleDrop}
+                                onDragEnter={handleDragEnter}
+                            />
+                        ))
+                    ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 2 }}>
+                            No songs in this playlist
+                        </Typography>
+                    )}
                 </Box>
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
