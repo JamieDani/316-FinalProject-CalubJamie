@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
-const YouTubePlayer = ({ playlist = [], initialSong = 0 }) => {
+const YouTubePlayer = ({ videoId = null, onPlayerReady = null }) => {
   const playerRef = useRef(null);
-  const [currentSong, setCurrentSong] = useState(initialSong);
   const [isAPIReady, setIsAPIReady] = useState(false);
 
   useEffect(() => {
@@ -23,56 +22,54 @@ const YouTubePlayer = ({ playlist = [], initialSong = 0 }) => {
   }, []);
 
   useEffect(() => {
-    if (isAPIReady && playlist.length > 0 && !playerRef.current) {
+    if (isAPIReady && videoId && !playerRef.current) {
       playerRef.current = new window.YT.Player('youtube-player-container', {
         height: '100%',
         width: '100%',
-        videoId: playlist[currentSong],
+        videoId: videoId,
         playerVars: {
           'playsinline': 1
         },
         events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
+          'onReady': onPlayerReadyHandler
         }
       });
+    } else if (playerRef.current && videoId) {
+      playerRef.current.loadVideoById(videoId);
+      if (onPlayerReady) {
+        onPlayerReady(playerRef.current);
+      }
     }
-  }, [isAPIReady, playlist]);
+  }, [isAPIReady, videoId]);
 
-  const onPlayerReady = (event) => {
+  const onPlayerReadyHandler = (event) => {
     console.log('Player ready');
     event.target.playVideo();
-  };
-
-  const onPlayerStateChange = (event) => {
-    const playerStatus = event.data;
-    console.log("Player state change:", playerStatus);
-
-    if (playerStatus === 0) {
-      // Video ended
-      console.log("Video ended");
-      incSong();
-    } else if (playerStatus === 1) {
-      console.log("Video playing");
-    } else if (playerStatus === 2) {
-      console.log("Video paused");
-    } else if (playerStatus === 3) {
-      console.log("Video buffering");
+    if (onPlayerReady) {
+      onPlayerReady(event.target);
     }
   };
 
-  const incSong = () => {
-    const nextSong = (currentSong + 1) % playlist.length;
-    setCurrentSong(nextSong);
-    changeSong(nextSong);
-  };
-
-  const changeSong = (songIndex) => {
-    if (playerRef.current && songIndex >= 0 && songIndex < playlist.length) {
-      playerRef.current.loadVideoById(playlist[songIndex]);
-      console.log("Changed to song:", songIndex, "videoId:", playlist[songIndex]);
-    }
-  };
+  if (!videoId) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '100%',
+          aspectRatio: '16/9',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#000',
+          color: '#fff',
+          border: '2px solid #ccc',
+          borderRadius: 1
+        }}
+      >
+        <Typography variant="h6">Select a song to play</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box

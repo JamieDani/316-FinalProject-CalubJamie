@@ -2,9 +2,11 @@ import { Box, Typography, Button, Avatar, IconButton, Collapse } from '@mui/mate
 import { useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import PlayPlaylistScreen from './PlayPlaylistScreen';
 
 function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy, currentUserEmail }) {
     const [expanded, setExpanded] = useState(false);
+    const [isPlayModalOpen, setIsPlayModalOpen] = useState(false);
 
     const handleToggleExpand = () => {
         setExpanded(!expanded);
@@ -29,6 +31,10 @@ function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy, currentU
         if (onCopy) {
             onCopy(playlist);
         }
+    };
+
+    const handlePlay = () => {
+        setIsPlayModalOpen(true);
     };
 
     const getInitials = (username) => {
@@ -124,6 +130,7 @@ function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy, currentU
                                 <Button
                                     variant="contained"
                                     size="small"
+                                    onClick={handlePlay}
                                     sx={{
                                         backgroundColor: '#e83e8c',
                                         '&:hover': { backgroundColor: '#d62976' },
@@ -141,6 +148,7 @@ function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy, currentU
                         <Button
                             variant="contained"
                             size="small"
+                            onClick={handlePlay}
                             sx={{
                                 backgroundColor: '#e83e8c',
                                 '&:hover': { backgroundColor: '#d62976' },
@@ -174,6 +182,12 @@ function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy, currentU
                     )}
                 </Box>
             </Collapse>
+
+            <PlayPlaylistScreen
+                open={isPlayModalOpen}
+                onClose={() => setIsPlayModalOpen(false)}
+                playlist={playlist}
+            />
         </Box>
     );
 }

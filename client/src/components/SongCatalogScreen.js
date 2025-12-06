@@ -19,12 +19,7 @@ const SongCatalogScreen = () => {
     const [titleFilter, setTitleFilter] = useState("");
     const [artistFilter, setArtistFilter] = useState("");
     const [yearFilter, setYearFilter] = useState("");
-
-    const playlist = [
-        "Di1Hlo87NMg", 
-        "Di1Hlo87NMg", 
-        "Di1Hlo87NMg"  
-    ];
+    const [selectedSongForPlayer, setSelectedSongForPlayer] = useState(null);
 
     useEffect(() => {
         fetchSongs();
@@ -100,6 +95,10 @@ const SongCatalogScreen = () => {
         setSelectedSong(null);
     };
 
+    const handleSongClick = (song) => {
+        setSelectedSongForPlayer(song);
+    };
+
     return (
         <>
             <AddSongModal open={isAddSongModalOpen} onClose={handleCloseAddSongModal} mode="add" />
@@ -151,7 +150,7 @@ const SongCatalogScreen = () => {
                     </Box>
 
                     <Box>
-                        <YouTubePlayer playlist={playlist} initialSong={0} />
+                        <YouTubePlayer videoId={selectedSongForPlayer?.youTubeId} />
                     </Box>
                 </Stack>
             </Box>
@@ -186,6 +185,8 @@ const SongCatalogScreen = () => {
                             onEdit={handleEditSong}
                             onDelete={handleDeleteSong}
                             onAddToPlaylist={handleAddToPlaylist}
+                            onClick={() => handleSongClick(song)}
+                            isSelected={selectedSongForPlayer?._id === song._id}
                             currentUserEmail={auth.user?.email}
                         />
                     ))}

@@ -3,7 +3,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useState } from 'react';
 
 function SongCard(props) {
-    const { song, onEdit, onDelete, onAddToPlaylist, currentUserEmail } = props;
+    const { song, onEdit, onDelete, onAddToPlaylist, onClick, isSelected, currentUserEmail } = props;
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
@@ -36,15 +36,16 @@ function SongCard(props) {
 
     return (
         <Box
+            onClick={onClick}
             sx={{
-                border: '1px solid #ccc',
+                border: isOwner ? '3px solid #1976d2' : '1px solid #ccc',
                 borderRadius: 1,
                 padding: 2,
                 marginBottom: 1,
-                backgroundColor: '#f9f9f9',
+                backgroundColor: isSelected ? '#d4edff' : '#f9f9f9',
                 position: 'relative',
                 '&:hover': {
-                    backgroundColor: '#f0f0f0',
+                    backgroundColor: isSelected ? '#c0e3ff' : '#f0f0f0',
                     cursor: 'pointer'
                 }
             }}
