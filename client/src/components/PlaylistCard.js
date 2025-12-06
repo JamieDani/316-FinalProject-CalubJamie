@@ -3,7 +3,7 @@ import { useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-function PlaylistCard({ playlist, songs = [], onDelete, onEdit }) {
+function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy }) {
     const [expanded, setExpanded] = useState(false);
 
     const handleToggleExpand = () => {
@@ -19,6 +19,12 @@ function PlaylistCard({ playlist, songs = [], onDelete, onEdit }) {
     const handleEdit = () => {
         if (onEdit) {
             onEdit(playlist);
+        }
+    };
+
+    const handleCopy = () => {
+        if (onCopy) {
+            onCopy(playlist);
         }
     };
 
@@ -97,6 +103,7 @@ function PlaylistCard({ playlist, songs = [], onDelete, onEdit }) {
                         <Button
                             variant="contained"
                             size="small"
+                            onClick={handleCopy}
                             sx={{
                                 backgroundColor: '#28a745',
                                 '&:hover': { backgroundColor: '#218838' },

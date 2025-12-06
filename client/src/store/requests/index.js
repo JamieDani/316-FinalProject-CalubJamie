@@ -67,6 +67,12 @@ export const createPlaylist = (ownerUsername, ownerEmail) => {
     });
 }
 
+export const copyPlaylist = (id) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${id}/copy`, {
+        method: 'POST'
+    });
+}
+
 export const deletePlaylistById = (id) => {
     return fetchWrapper(`${BASE_URL}/playlist/${id}`, {
         method: 'DELETE'
@@ -81,6 +87,23 @@ export const getPlaylistById = (id) => {
 
 export const getPlaylistPairs = () => {
     return fetchWrapper(`${BASE_URL}/playlistpairs/`, {
+        method: 'GET'
+    });
+}
+
+export const getPlaylists = (filters = {}) => {
+    const queryParams = new URLSearchParams();
+
+    if (filters.name) queryParams.append('name', filters.name);
+    if (filters.username) queryParams.append('username', filters.username);
+    if (filters.songTitle) queryParams.append('songTitle', filters.songTitle);
+    if (filters.songArtist) queryParams.append('songArtist', filters.songArtist);
+    if (filters.songYear) queryParams.append('songYear', filters.songYear);
+
+    const queryString = queryParams.toString();
+    const url = queryString ? `${BASE_URL}/playlists?${queryString}` : `${BASE_URL}/playlists`;
+
+    return fetchWrapper(url, {
         method: 'GET'
     });
 }
@@ -159,9 +182,11 @@ export const getUserProfilePictureByEmail = (email) => {
 
 const apis = {
     createPlaylist,
+    copyPlaylist,
     deletePlaylistById,
     getPlaylistById,
     getPlaylistPairs,
+    getPlaylists,
     updatePlaylistById,
     addSongToPlaylist,
     addSong,

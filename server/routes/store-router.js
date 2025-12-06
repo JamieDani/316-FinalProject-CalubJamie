@@ -10,6 +10,7 @@ const router = express.Router()
 const auth = require('../auth')
 
 router.post('/playlist', auth.verify, StoreController.createPlaylist)
+router.post('/playlist/:id/copy', auth.verify, StoreController.copyPlaylist)
 router.delete('/playlist/:id', auth.verify, StoreController.deletePlaylist)
 router.get('/playlist/:id', auth.verify, StoreController.getPlaylistById)
 router.get('/playlistpairs', auth.verify, StoreController.getPlaylistPairs)

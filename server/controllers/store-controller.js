@@ -31,6 +31,19 @@ createPlaylist = (req, res) => {
 
 }
 
+copyPlaylist = async (req, res) => {
+    if(auth.verifyUser(req) === null){
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        })
+    }
+    console.log("copyPlaylist with id: " + JSON.stringify(req.params.id));
+
+    db.copyPlaylist(req.userId, req.params.id)
+    .then(playlist => res.status(201).json({ success: true, playlist }))
+    .catch(err => res.status(400).json({ success: false, errorMessage: err.message || 'Playlist Not Copied!' }));
+}
+
 deletePlaylist = async (req, res) => {
     if(auth.verifyUser(req) === null){
         return res.status(400).json({
@@ -84,9 +97,17 @@ getPlaylists = async (req, res) => {
         });
     }
 
-    console.log("getPlaylists");
+    const filters = {
+        name: req.query.name,
+        username: req.query.username,
+        songTitle: req.query.songTitle,
+        songArtist: req.query.songArtist,
+        songYear: req.query.songYear
+    };
 
-    db.getPlaylists()
+    console.log("getPlaylists filters:", JSON.stringify(filters));
+
+    db.getPlaylists(filters)
         .then(playlists => res.status(200).json({ success: true, data: playlists }))
         .catch(err => res.status(400).json({
             success: false,
@@ -277,6 +298,7 @@ getUserProfilePictureByEmail = async (req, res) => {
 
 module.exports = {
     createPlaylist,
+    copyPlaylist,
     deletePlaylist,
     getPlaylistById,
     getPlaylistPairs,

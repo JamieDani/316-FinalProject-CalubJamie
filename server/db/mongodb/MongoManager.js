@@ -86,23 +86,49 @@ class MongoManager extends DatabaseManager {
         }
     }
 
+    async copyPlaylist(userId, playlistId) {
+        try {
+            const user = await User.findById(userId);
+            if (!user) throw new Error("user not found");
+
+            const originalPlaylist = await Playlist.findById(playlistId);
+            if (!originalPlaylist) throw new Error("playlist not found");
+
+            const newPlaylist = new Playlist({
+                name: `${originalPlaylist.name} copy`,
+                ownerUsername: user.username,
+                ownerEmail: user.email,
+                songs: [...originalPlaylist.songs]
+            });
+
+            await newPlaylist.save();
+
+            user.playlists.push(newPlaylist._id);
+            await user.save();
+
+            return newPlaylist;
+        } catch (err) {
+            throw err;
+        }
+    }
+
     async deletePlaylist(userId, playlistId) {
         try {
           const playlist = await Playlist.findById(playlistId);
           if (!playlist) throw new Error("playlist not found");
-      
+
           const owner = await User.findOne({ email: playlist.ownerEmail });
           if (!owner) throw new Error("user not found");
-      
+
           if (owner._id.toString() !== userId.toString()) {
             throw new Error("authentication error");
           }
-      
+
           await Playlist.findByIdAndDelete(playlistId);
-      
+
           owner.playlists = owner.playlists.filter(p => p.toString() !== playlistId.toString());
           await owner.save();
-      
+
           return;
         } catch (err) {
           throw err;
@@ -159,14 +185,55 @@ class MongoManager extends DatabaseManager {
     }
     
 
-    async getPlaylists() {
+    async getPlaylists(filters = {}) {
         try {
-            const playlists = await Playlist.find({});
-    
-            if (!playlists || playlists.length === 0) {
-                throw new Error("no playlists found");
+            const query = {};
+
+            if (filters.name) {
+                query.name = { $regex: filters.name, $options: 'i' };
             }
-    
+
+            if (filters.username) {
+                query.ownerUsername = { $regex: filters.username, $options: 'i' };
+            }
+
+            const songFilters = [];
+
+            if (filters.songTitle) {
+                songFilters.push({ title: { $regex: filters.songTitle, $options: 'i' } });
+            }
+            if (filters.songArtist) {
+                songFilters.push({ artist: { $regex: filters.songArtist, $options: 'i' } });
+            }
+            if (filters.songYear) {
+                songFilters.push({ year: parseInt(filters.songYear) });
+            }
+
+            if (songFilters.length > 0) {
+                const playlistIdSets = await Promise.all(
+                    songFilters.map(async (songFilter) => {
+                        const matchingSongs = await Song.find(songFilter);
+                        const songIds = matchingSongs.map(song => song._id);
+                        const playlists = await Playlist.find({
+                            songs: { $in: songIds }
+                        });
+                        return new Set(playlists.map(p => p._id.toString()));
+                    })
+                );
+
+                let intersection = playlistIdSets[0];
+                for (let i = 1; i < playlistIdSets.length; i++) {
+                    intersection = new Set([...intersection].filter(id => playlistIdSets[i].has(id)));
+                }
+
+                if (intersection.size === 0) {
+                    return [];
+                }
+
+                query._id = { $in: Array.from(intersection) };
+            }
+
+            const playlists = await Playlist.find(query);
             return playlists;
         } catch (err) {
             throw err;

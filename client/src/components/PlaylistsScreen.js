@@ -14,6 +14,14 @@ const PlaylistsScreen = () => {
     const [playlistToDelete, setPlaylistToDelete] = useState(null);
     const [playlists, setPlaylists] = useState([]);
 
+    const [filters, setFilters] = useState({
+        name: '',
+        username: '',
+        songTitle: '',
+        songArtist: '',
+        songYear: ''
+    });
+
     const handleAddPlaylist = async () => {
         if (!auth.user) {
             console.error("No user logged in");
@@ -58,16 +66,61 @@ const PlaylistsScreen = () => {
         setIsEditPlaylistModalOpen(true);
     };
 
+    const handleCopyPlaylist = async (playlist) => {
+        try {
+            const response = await storeRequestSender.copyPlaylist(playlist._id);
+            if (response.data.success) {
+                setCurrentPlaylist(response.data.playlist);
+                setIsEditPlaylistModalOpen(true);
+            }
+        } catch (error) {
+            console.error("Error copying playlist:", error);
+        }
+    };
+
+    const handleFilterChange = (field) => (event) => {
+        setFilters({
+            ...filters,
+            [field]: event.target.value
+        });
+    };
+
+    const handleSearch = () => {
+        fetchPlaylists();
+    };
+
+    const handleClear = () => {
+        setFilters({
+            name: '',
+            username: '',
+            songTitle: '',
+            songArtist: '',
+            songYear: ''
+        });
+        fetchPlaylistsWithFilters({});
+    };
+
     useEffect(() => {
         fetchPlaylists();
     }, []);
 
-    const fetchPlaylists = async () => {
+    const fetchPlaylists = () => {
+        const activeFilters = {};
+        if (filters.name) activeFilters.name = filters.name;
+        if (filters.username) activeFilters.username = filters.username;
+        if (filters.songTitle) activeFilters.songTitle = filters.songTitle;
+        if (filters.songArtist) activeFilters.songArtist = filters.songArtist;
+        if (filters.songYear) activeFilters.songYear = filters.songYear;
+
+        fetchPlaylistsWithFilters(activeFilters);
+    };
+
+    const fetchPlaylistsWithFilters = async (activeFilters) => {
         try {
-            const response = await storeRequestSender.getPlaylistPairs();
+            const response = await storeRequestSender.getPlaylists(activeFilters);
             if (response.data.success) {
                 const playlistsWithSongs = await Promise.all(
-                    response.data.idNamePairs.map(async (playlist) => {
+                    response.data.data.map(async (playlist) => {
                         try {
                             const songsResponse = await storeRequestSender.getSongsOfPlaylist(playlist._id);
                             const profilePictureResponse = await storeRequestSender.getUserProfilePictureByEmail(playlist.ownerEmail);
@@ -122,33 +175,43 @@ const PlaylistsScreen = () => {
                         fullWidth
                         variant="outlined"
                         label="by Playlist Name"
+                        value={filters.name}
+                        onChange={handleFilterChange('name')}
                     />
                     <TextField
                         fullWidth
                         variant="outlined"
                         label="by User Name"
+                        value={filters.username}
+                        onChange={handleFilterChange('username')}
                     />
                     <TextField
                         fullWidth
                         variant="outlined"
                         label="by Song Title"
+                        value={filters.songTitle}
+                        onChange={handleFilterChange('songTitle')}
                     />
                     <TextField
                         fullWidth
                         variant="outlined"
                         label="by Song Artist"
+                        value={filters.songArtist}
+                        onChange={handleFilterChange('songArtist')}
                     />
                     <TextField
                         fullWidth
                         variant="outlined"
                         label="by Song Year"
+                        value={filters.songYear}
+                        onChange={handleFilterChange('songYear')}
                     />
 
                     <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                        <Button variant="contained" color="primary">
+                        <Button variant="contained" color="primary" onClick={handleSearch}>
                             Search
                         </Button>
-                        <Button variant="outlined" color="secondary">
+                        <Button variant="outlined" color="secondary" onClick={handleClear}>
                             Clear
                         </Button>
                     </Box>
@@ -171,6 +234,7 @@ const PlaylistsScreen = () => {
                             songs={playlist.songs || []}
                             onDelete={handleDeletePlaylist}
                             onEdit={handleEditPlaylist}
+                            onCopy={handleCopyPlaylist}
                         />
                     ))}
                 </Box>
