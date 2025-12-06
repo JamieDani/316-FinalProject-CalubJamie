@@ -235,6 +235,7 @@ const PlaylistsScreen = () => {
                             onDelete={handleDeletePlaylist}
                             onEdit={handleEditPlaylist}
                             onCopy={handleCopyPlaylist}
+                            currentUserEmail={auth.user?.email}
                         />
                     ))}
                 </Box>

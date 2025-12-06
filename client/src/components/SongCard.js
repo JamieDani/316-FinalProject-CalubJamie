@@ -3,9 +3,12 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useState } from 'react';
 
 function SongCard(props) {
-    const { song, onEdit, onDelete, onAddToPlaylist } = props;
+    const { song, onEdit, onDelete, onAddToPlaylist, currentUserEmail } = props;
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
+
+    const isOwner = currentUserEmail && song.ownerEmail === currentUserEmail;
+    const isSignedIn = Boolean(currentUserEmail);
 
     const handleMenuClick = (event) => {
         event.stopPropagation();
@@ -53,6 +56,7 @@ function SongCard(props) {
                     right: 8
                 }}
                 onClick={handleMenuClick}
+                disabled={!isSignedIn}
             >
                 <MoreVertIcon />
             </IconButton>
@@ -62,8 +66,8 @@ function SongCard(props) {
                 open={open}
                 onClose={handleMenuClose}
             >
-                <MenuItem onClick={handleEdit}>Edit Song</MenuItem>
-                <MenuItem onClick={handleDelete}>Remove Song from Catalog</MenuItem>
+                {isOwner && <MenuItem onClick={handleEdit}>Edit Song</MenuItem>}
+                {isOwner && <MenuItem onClick={handleDelete}>Remove Song from Catalog</MenuItem>}
                 <MenuItem onClick={handleAddToPlaylist}>Add Song To Playlist</MenuItem>
             </Menu>
 

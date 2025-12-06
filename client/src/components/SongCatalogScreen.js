@@ -1,5 +1,6 @@
 import { Box, Typography, TextField, Button, Divider, Stack, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import AuthContext from '../auth';
 import storeRequestSender from '../store/requests';
 import SongCard from './SongCard';
 import YouTubePlayer from './YouTubePlayer';
@@ -8,6 +9,7 @@ import DeleteSongConfirmModal from './DeleteSongConfirmModal';
 import AddToPlaylistModal from './AddToPlaylistModal';
 
 const SongCatalogScreen = () => {
+    const { auth } = useContext(AuthContext);
     const [isAddSongModalOpen, setIsAddSongModalOpen] = useState(false);
     const [isEditSongModalOpen, setIsEditSongModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -19,9 +21,9 @@ const SongCatalogScreen = () => {
     const [yearFilter, setYearFilter] = useState("");
 
     const playlist = [
-        "8eB01b6_3NY", 
-        "YkgkThdzX-8", 
-        "Zi_XLOBDo_Y"  
+        "Di1Hlo87NMg", 
+        "Di1Hlo87NMg", 
+        "Di1Hlo87NMg"  
     ];
 
     useEffect(() => {
@@ -184,6 +186,7 @@ const SongCatalogScreen = () => {
                             onEdit={handleEditSong}
                             onDelete={handleDeleteSong}
                             onAddToPlaylist={handleAddToPlaylist}
+                            currentUserEmail={auth.user?.email}
                         />
                     ))}
                 </Box>

@@ -3,12 +3,15 @@ import { useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy }) {
+function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy, currentUserEmail }) {
     const [expanded, setExpanded] = useState(false);
 
     const handleToggleExpand = () => {
         setExpanded(!expanded);
     };
+
+    const isOwner = currentUserEmail && playlist.ownerEmail === currentUserEmail;
+    const isSignedIn = Boolean(currentUserEmail);
 
     const handleDelete = () => {
         if (onDelete) {
@@ -69,51 +72,72 @@ function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy }) {
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Button
-                            variant="contained"
-                            size="small"
-                            onClick={handleDelete}
-                            sx={{
-                                backgroundColor: '#dc3545',
-                                '&:hover': { backgroundColor: '#c82333' },
-                                minWidth: '60px',
-                                fontSize: '0.7rem',
-                                padding: '4px 8px'
-                            }}
-                        >
-                            Delete
-                        </Button>
-                        <Button
-                            variant="contained"
-                            size="small"
-                            onClick={handleEdit}
-                            sx={{
-                                backgroundColor: '#007bff',
-                                '&:hover': { backgroundColor: '#0056b3' },
-                                minWidth: '60px',
-                                fontSize: '0.7rem',
-                                padding: '4px 8px'
-                            }}
-                        >
-                            Edit
-                        </Button>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Button
-                            variant="contained"
-                            size="small"
-                            onClick={handleCopy}
-                            sx={{
-                                backgroundColor: '#28a745',
-                                '&:hover': { backgroundColor: '#218838' },
-                                minWidth: '60px',
-                                fontSize: '0.7rem',
-                                padding: '4px 8px'
-                            }}
-                        >
-                            Copy
-                        </Button>
+                    {isSignedIn && (
+                        <>
+                            {isOwner && (
+                                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={handleDelete}
+                                        sx={{
+                                            backgroundColor: '#dc3545',
+                                            '&:hover': { backgroundColor: '#c82333' },
+                                            minWidth: '60px',
+                                            fontSize: '0.7rem',
+                                            padding: '4px 8px'
+                                        }}
+                                    >
+                                        Delete
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={handleEdit}
+                                        sx={{
+                                            backgroundColor: '#007bff',
+                                            '&:hover': { backgroundColor: '#0056b3' },
+                                            minWidth: '60px',
+                                            fontSize: '0.7rem',
+                                            padding: '4px 8px'
+                                        }}
+                                    >
+                                        Edit
+                                    </Button>
+                                </Box>
+                            )}
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={handleCopy}
+                                    sx={{
+                                        backgroundColor: '#28a745',
+                                        '&:hover': { backgroundColor: '#218838' },
+                                        minWidth: '60px',
+                                        fontSize: '0.7rem',
+                                        padding: '4px 8px'
+                                    }}
+                                >
+                                    Copy
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    sx={{
+                                        backgroundColor: '#e83e8c',
+                                        '&:hover': { backgroundColor: '#d62976' },
+                                        minWidth: '60px',
+                                        fontSize: '0.7rem',
+                                        padding: '4px 8px'
+                                    }}
+                                >
+                                    Play
+                                </Button>
+                            </Box>
+                        </>
+                    )}
+                    {!isSignedIn && (
                         <Button
                             variant="contained"
                             size="small"
@@ -127,7 +151,7 @@ function PlaylistCard({ playlist, songs = [], onDelete, onEdit, onCopy }) {
                         >
                             Play
                         </Button>
-                    </Box>
+                    )}
                 </Box>
 
                 <IconButton onClick={handleToggleExpand} size="small">

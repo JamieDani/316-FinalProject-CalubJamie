@@ -91,12 +91,6 @@ getPlaylistPairs = async (req, res) => {
         }));
 }
 getPlaylists = async (req, res) => {
-    if (auth.verifyUser(req) === null) {
-        return res.status(400).json({
-            errorMessage: 'UNAUTHORIZED'
-        });
-    }
-
     const filters = {
         name: req.query.name,
         username: req.query.username,
@@ -219,12 +213,6 @@ addSong = async (req, res) => {
 };
 
 getSongs = async (req, res) => {
-    if (auth.verifyUser(req) === null) {
-        return res.status(400).json({
-            errorMessage: 'UNAUTHORIZED'
-        });
-    }
-
     const filters = {
         title: req.query.title,
         artist: req.query.artist,
@@ -284,12 +272,6 @@ deleteSong = async (req, res) => {
 };
 
 getSongsOfPlaylist = async (req, res) => {
-    if (auth.verifyUser(req) === null) {
-        return res.status(400).json({
-            errorMessage: 'UNAUTHORIZED'
-        });
-    }
-
     console.log("getSongsOfPlaylist with id:", req.params.id);
 
     db.getSongsOfPlaylist(req.params.id)
@@ -301,12 +283,6 @@ getSongsOfPlaylist = async (req, res) => {
 };
 
 getUserProfilePictureByEmail = async (req, res) => {
-    if (auth.verifyUser(req) === null) {
-        return res.status(400).json({
-            errorMessage: 'UNAUTHORIZED'
-        });
-    }
-
     console.log("getUserProfilePictureByEmail with email:", req.query.email);
 
     db.getUserProfilePictureByEmail(req.query.email)

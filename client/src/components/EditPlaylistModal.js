@@ -387,7 +387,7 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
                             }
                         }}
                     >
-                        Save and Close
+                        Close
                     </Button>
                 </Box>
             </Box>
