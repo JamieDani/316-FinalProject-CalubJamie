@@ -159,9 +159,10 @@ addSongToPlaylist = async (req, res) => {
         });
     }
 
-    console.log("addSongToPlaylist songId:", body.songId);
+    console.log("addSongToPlaylist songId:", body.songId, "index:", body.index);
 
-    db.addSongToPlaylist(req.userId, req.params.id, body.songId)
+    const index = body.index !== undefined ? body.index : -1;
+    db.addSongToPlaylist(req.userId, req.params.id, body.songId, index)
         .then(updated => res.status(200).json({
             success: true,
             message: 'Song added to playlist!',

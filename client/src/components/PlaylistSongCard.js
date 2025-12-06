@@ -32,7 +32,7 @@ function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDrag
 
     const handleDelete = () => {
         if (onDelete) {
-            onDelete(song);
+            onDelete(song, index);
         }
     };
 

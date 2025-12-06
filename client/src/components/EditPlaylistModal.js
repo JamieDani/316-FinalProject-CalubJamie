@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import storeRequestSender from '../store/requests';
 import Box from '@mui/material/Box';
@@ -10,6 +10,58 @@ import AddIcon from '@mui/icons-material/Add';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import PlaylistSongCard from './PlaylistSongCard';
+import { jsTPS, jsTPS_Transaction } from 'jstps';
+
+class MoveSong_Transaction extends jsTPS_Transaction {
+    constructor(modal, oldIndex, newIndex) {
+        super();
+        this.modal = modal;
+        this.oldIndex = oldIndex;
+        this.newIndex = newIndex;
+    }
+
+    executeDo() {
+        this.modal.moveSong(this.oldIndex, this.newIndex);
+    }
+
+    executeUndo() {
+        this.modal.moveSong(this.newIndex, this.oldIndex);
+    }
+}
+
+class AddSong_Transaction extends jsTPS_Transaction {
+    constructor(modal, song, index) {
+        super();
+        this.modal = modal;
+        this.song = song;
+        this.index = index;
+    }
+
+    executeDo() {
+        this.modal.addSongAtIndex(this.song, this.index);
+    }
+
+    executeUndo() {
+        this.modal.removeSongAtIndex(this.index);
+    }
+}
+
+class RemoveSong_Transaction extends jsTPS_Transaction {
+    constructor(modal, song, index) {
+        super();
+        this.modal = modal;
+        this.song = song;
+        this.index = index;
+    }
+
+    executeDo() {
+        this.modal.removeSongAtIndex(this.index);
+    }
+
+    executeUndo() {
+        this.modal.addSongAtIndex(this.song, this.index);
+    }
+}
 
 const style = {
     position: 'absolute',
@@ -32,13 +84,24 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [songs, setSongs] = useState([]);
     const [draggedIndex, setDraggedIndex] = useState(null);
+    const [canUndo, setCanUndo] = useState(false);
+    const [canRedo, setCanRedo] = useState(false);
+    const tps = useRef(new jsTPS());
+    const songsRef = useRef([]);
 
     useEffect(() => {
         if (playlist) {
             setPlaylistTitle(playlist.name);
             fetchSongs();
+            tps.current.clearAllTransactions();
+            setCanUndo(false);
+            setCanRedo(false);
         }
     }, [playlist]);
+
+    useEffect(() => {
+        songsRef.current = songs;
+    }, [songs]);
 
     const fetchSongs = async () => {
         if (!playlist?._id) return;
@@ -61,19 +124,35 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
         e.preventDefault();
     };
 
-    const handleDrop = async (e, dropIndex) => {
+    const handleDrop = (e, dropIndex) => {
         e.preventDefault();
 
         if (draggedIndex === null || draggedIndex === dropIndex) {
             return;
         }
 
-        const newSongs = [...songs];
-        const [draggedSong] = newSongs.splice(draggedIndex, 1);
-        newSongs.splice(dropIndex, 0, draggedSong);
+        addMoveSongTransaction(draggedIndex, dropIndex);
+        setDraggedIndex(null);
+    };
+
+    const handleDragEnter = (index) => {
+    };
+
+    const handleAddSong = () => {
+        history.push('/song-catalog/');
+    };
+
+    const handleRemoveSong = (song, index) => {
+        if (!playlist?._id || !song?._id) return;
+        addRemoveSongTransaction(song, index);
+    };
+
+    const moveSong = async (start, end) => {
+        const newSongs = [...songsRef.current];
+        const [movedSong] = newSongs.splice(start, 1);
+        newSongs.splice(end, 0, movedSong);
 
         setSongs(newSongs);
-        setDraggedIndex(null);
 
         const songIds = newSongs.map(song => song._id);
         try {
@@ -86,20 +165,68 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
         }
     };
 
-    const handleDragEnter = (index) => {
-    };
+    const addSongAtIndex = async (song, index) => {
+        const newSongs = [...songsRef.current];
+        if (index === -1 || index >= newSongs.length) {
+            newSongs.push(song);
+        } else {
+            newSongs.splice(index, 0, song);
+        }
 
-    const handleAddSong = () => {
-        history.push('/song-catalog/');
-    };
+        setSongs(newSongs);
 
-    const handleRemoveSong = async (song) => {
-        if (!playlist?._id || !song?._id) return;
         try {
-            await storeRequestSender.removeSongFromPlaylist(playlist._id, song._id);
+            await storeRequestSender.addSongToPlaylist(playlist._id, song._id, index);
+        } catch (error) {
+            console.error("Error adding song to playlist:", error);
             fetchSongs();
+        }
+    };
+
+    const removeSongAtIndex = async (index) => {
+        const newSongs = [...songsRef.current];
+        newSongs.splice(index, 1);
+
+        setSongs(newSongs);
+
+        const songIds = newSongs.map(song => song._id);
+        try {
+            await storeRequestSender.updatePlaylistById(playlist._id, {
+                songs: songIds
+            });
         } catch (error) {
             console.error("Error removing song from playlist:", error);
+            fetchSongs();
+        }
+    };
+
+    const addMoveSongTransaction = (start, end) => {
+        const transaction = new MoveSong_Transaction({ moveSong }, start, end);
+        tps.current.processTransaction(transaction);
+        setCanUndo(tps.current.hasTransactionToUndo());
+        setCanRedo(tps.current.hasTransactionToDo());
+    };
+
+    const addRemoveSongTransaction = (song, index) => {
+        const transaction = new RemoveSong_Transaction({ removeSongAtIndex, addSongAtIndex }, song, index);
+        tps.current.processTransaction(transaction);
+        setCanUndo(tps.current.hasTransactionToUndo());
+        setCanRedo(tps.current.hasTransactionToDo());
+    };
+
+    const handleUndo = () => {
+        if (tps.current.hasTransactionToUndo()) {
+            tps.current.undoTransaction();
+            setCanUndo(tps.current.hasTransactionToUndo());
+            setCanRedo(tps.current.hasTransactionToDo());
+        }
+    };
+
+    const handleRedo = () => {
+        if (tps.current.hasTransactionToDo()) {
+            tps.current.doTransaction();
+            setCanUndo(tps.current.hasTransactionToUndo());
+            setCanRedo(tps.current.hasTransactionToDo());
         }
     };
 
@@ -222,17 +349,29 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         <IconButton
+                            onClick={handleUndo}
+                            disabled={!canUndo}
                             sx={{
                                 border: '1px solid #8932CC',
-                                color: '#8932CC'
+                                color: '#8932CC',
+                                '&.Mui-disabled': {
+                                    color: '#ccc',
+                                    borderColor: '#ccc'
+                                }
                             }}
                         >
                             <UndoIcon />
                         </IconButton>
                         <IconButton
+                            onClick={handleRedo}
+                            disabled={!canRedo}
                             sx={{
                                 border: '1px solid #8932CC',
-                                color: '#8932CC'
+                                color: '#8932CC',
+                                '&.Mui-disabled': {
+                                    color: '#ccc',
+                                    borderColor: '#ccc'
+                                }
                             }}
                         >
                             <RedoIcon />

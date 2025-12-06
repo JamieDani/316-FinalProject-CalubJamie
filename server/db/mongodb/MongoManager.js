@@ -266,7 +266,7 @@ class MongoManager extends DatabaseManager {
         }
     }
 
-    async addSongToPlaylist(userId, playlistId, songId) {
+    async addSongToPlaylist(userId, playlistId, songId, index = -1) {
         try {
             const playlist = await Playlist.findById(playlistId);
             if (!playlist) throw new Error("playlist not found");
@@ -279,7 +279,11 @@ class MongoManager extends DatabaseManager {
             }
 
             if (!playlist.songs.includes(songId)) {
-                playlist.songs.push(songId);
+                if (index === -1 || index >= playlist.songs.length) {
+                    playlist.songs.push(songId);
+                } else {
+                    playlist.songs.splice(index, 0, songId);
+                }
                 await playlist.save();
             }
 

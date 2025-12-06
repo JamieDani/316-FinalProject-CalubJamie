@@ -117,11 +117,12 @@ export const updatePlaylistById = (id, playlist) => {
     });
 }
 
-export const addSongToPlaylist = (playlistId, songId) => {
+export const addSongToPlaylist = (playlistId, songId, index = -1) => {
     return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/add-song`, {
         method: 'PUT',
         body: JSON.stringify({
-            songId
+            songId,
+            index
         })
     });
 }
