@@ -93,6 +93,16 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
         history.push('/song-catalog/');
     };
 
+    const handleRemoveSong = async (song) => {
+        if (!playlist?._id || !song?._id) return;
+        try {
+            await storeRequestSender.removeSongFromPlaylist(playlist._id, song._id);
+            fetchSongs();
+        } catch (error) {
+            console.error("Error removing song from playlist:", error);
+        }
+    };
+
     const handleTitleDoubleClick = () => {
         setIsEditingTitle(true);
     };
@@ -199,6 +209,7 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
                                 onDragOver={handleDragOver}
                                 onDrop={handleDrop}
                                 onDragEnter={handleDragEnter}
+                                onDelete={handleRemoveSong}
                             />
                         ))
                     ) : (

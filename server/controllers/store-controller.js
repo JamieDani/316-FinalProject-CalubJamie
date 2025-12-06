@@ -172,6 +172,26 @@ addSongToPlaylist = async (req, res) => {
         }));
 };
 
+removeSongFromPlaylist = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    console.log("removeSongFromPlaylist playlistId:", req.params.id, "songId:", req.params.songId);
+
+    db.removeSongFromPlaylist(req.userId, req.params.id, req.params.songId)
+        .then(() => res.status(200).json({
+            success: true,
+            message: 'Song removed from playlist!',
+        }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not removed from playlist!'
+        }));
+};
+
 addSong = async (req, res) => {
     if (auth.verifyUser(req) === null) {
         return res.status(400).json({
@@ -305,6 +325,7 @@ module.exports = {
     getPlaylists,
     updatePlaylist,
     addSongToPlaylist,
+    removeSongFromPlaylist,
     addSong,
     getSongs,
     updateSong,

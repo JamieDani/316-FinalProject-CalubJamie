@@ -289,6 +289,27 @@ class MongoManager extends DatabaseManager {
         }
     }
 
+    async removeSongFromPlaylist(userId, playlistId, songId) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            const owner = await User.findOne({ email: playlist.ownerEmail });
+            if (!owner) throw new Error("user not found");
+
+            if (owner._id.toString() !== userId.toString()) {
+                throw new Error("authentication error");
+            }
+
+            playlist.songs = playlist.songs.filter(id => id.toString() !== songId.toString());
+            await playlist.save();
+
+            return playlist;
+        } catch (err) {
+            throw err;
+        }
+    }
+
     async addSong(title, artist, year, youTubeId, ownerUsername, ownerEmail) {
         try {
             console.log("MongoManager addSong called");

@@ -2,7 +2,7 @@ import { Box, Typography, IconButton } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
 
-function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDragEnter }) {
+function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDragEnter, onDelete }) {
     const handleDragStart = (e) => {
         e.dataTransfer.effectAllowed = 'move';
         if (onDragStart) {
@@ -27,6 +27,12 @@ function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDrag
     const handleDragEnter = (e) => {
         if (onDragEnter) {
             onDragEnter(index);
+        }
+    };
+
+    const handleDelete = () => {
+        if (onDelete) {
+            onDelete(song);
         }
     };
 
@@ -59,7 +65,7 @@ function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDrag
                 <IconButton size="small">
                     <ContentCopyIcon fontSize="small" />
                 </IconButton>
-                <IconButton size="small">
+                <IconButton size="small" onClick={handleDelete}>
                     <CloseIcon fontSize="small" />
                 </IconButton>
             </Box>

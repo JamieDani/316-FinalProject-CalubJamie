@@ -126,6 +126,12 @@ export const addSongToPlaylist = (playlistId, songId) => {
     });
 }
 
+export const removeSongFromPlaylist = (playlistId, songId) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/song/${songId}`, {
+        method: 'DELETE'
+    });
+}
+
 export const addSong = (title, artist, year, youTubeId, ownerUsername, ownerEmail) => {
     return fetchWrapper(`${BASE_URL}/song`, {
         method: 'POST',
@@ -189,6 +195,7 @@ const apis = {
     getPlaylists,
     updatePlaylistById,
     addSongToPlaylist,
+    removeSongFromPlaylist,
     addSong,
     getSongs,
     updateSong,
