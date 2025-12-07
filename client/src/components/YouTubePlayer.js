@@ -1,9 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 
-const YouTubePlayer = ({ videoId = null, onPlayerReady = null }) => {
+const YouTubePlayer = ({ videoId = null, onPlayerReady = null, onSongEnd = null, onPlay = null }) => {
   const playerRef = useRef(null);
+  const onSongEndRef = useRef(onSongEnd);
+  const onPlayRef = useRef(onPlay);
   const [isAPIReady, setIsAPIReady] = useState(false);
+
+  // Keep the refs up to date
+  useEffect(() => {
+    onSongEndRef.current = onSongEnd;
+  }, [onSongEnd]);
+
+  useEffect(() => {
+    onPlayRef.current = onPlay;
+  }, [onPlay]);
 
   useEffect(() => {
     if (!window.YT) {
@@ -31,7 +42,8 @@ const YouTubePlayer = ({ videoId = null, onPlayerReady = null }) => {
           'playsinline': 1
         },
         events: {
-          'onReady': onPlayerReadyHandler
+          'onReady': onPlayerReadyHandler,
+          'onStateChange': onPlayerStateChange
         }
       });
     } else if (playerRef.current && videoId) {
@@ -47,6 +59,15 @@ const YouTubePlayer = ({ videoId = null, onPlayerReady = null }) => {
     event.target.playVideo();
     if (onPlayerReady) {
       onPlayerReady(event.target);
+    }
+  };
+
+  const onPlayerStateChange = (event) => {
+    // YouTube player state: 0 = ended, 1 = playing, 2 = paused
+    if (event.data === 1 && onPlayRef.current) {
+      onPlayRef.current();
+    } else if (event.data === 0 && onSongEndRef.current) {
+      onSongEndRef.current();
     }
   };
 

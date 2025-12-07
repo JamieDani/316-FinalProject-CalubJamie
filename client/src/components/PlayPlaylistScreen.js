@@ -4,6 +4,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
+import RepeatOneIcon from '@mui/icons-material/RepeatOne';
 import storeRequestSender from '../store/requests';
 import YouTubePlayer from './YouTubePlayer';
 
@@ -11,8 +12,10 @@ const PlayPlaylistScreen = ({ open, onClose, playlist }) => {
     const [songs, setSongs] = useState([]);
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(true);
+    const [isLooping, setIsLooping] = useState(false);
     const [profilePicture, setProfilePicture] = useState(null);
     const playerRef = useRef(null);
+    const lastTrackedSongRef = useRef(null);
 
     useEffect(() => {
         if (open && playlist) {
@@ -74,9 +77,47 @@ const PlayPlaylistScreen = ({ open, onClose, playlist }) => {
         setIsPlaying(true);
     };
 
+    const handleToggleLoop = () => {
+        setIsLooping(!isLooping);
+    };
+
+    const handleSongEnd = () => {
+        if (isLooping) {
+            if (playerRef.current) {
+                playerRef.current.seekTo(0);
+                playerRef.current.playVideo();
+            }
+        } else {
+            handleNext();
+        }
+    };
+
     const handleSongClick = (index) => {
         setCurrentSongIndex(index);
         setIsPlaying(true);
+    };
+
+    const handleSongPlay = async () => {
+        const currentSong = songs[currentSongIndex];
+        if (!currentSong || !currentSong._id) return;
+
+        if (lastTrackedSongRef.current !== currentSong._id) {
+            try {
+                const response = await storeRequestSender.addSongListen(currentSong._id);
+                lastTrackedSongRef.current = currentSong._id;
+                console.log("Song listen tracked for:", currentSong.title);
+
+                if (response.data.success && response.data.song) {
+                    setSongs(prevSongs =>
+                        prevSongs.map(s =>
+                            s._id === currentSong._id ? { ...s, numListens: response.data.song.numListens } : s
+                        )
+                    );
+                }
+            } catch (error) {
+                console.error("Error tracking song listen:", error);
+            }
+        }
     };
 
     const currentSong = songs[currentSongIndex];
@@ -143,6 +184,8 @@ const PlayPlaylistScreen = ({ open, onClose, playlist }) => {
                         <YouTubePlayer
                             videoId={currentSong?.youTubeId}
                             onPlayerReady={handlePlayerReady}
+                            onSongEnd={handleSongEnd}
+                            onPlay={handleSongPlay}
                         />
                     </Box>
 
@@ -167,6 +210,20 @@ const PlayPlaylistScreen = ({ open, onClose, playlist }) => {
                             sx={{ border: '1px solid #ccc' }}
                         >
                             <SkipNextIcon />
+                        </IconButton>
+                        <IconButton
+                            onClick={handleToggleLoop}
+                            disabled={songs.length === 0}
+                            sx={{
+                                border: '1px solid #ccc',
+                                backgroundColor: isLooping ? '#1976d2' : 'transparent',
+                                color: isLooping ? '#fff' : 'inherit',
+                                '&:hover': {
+                                    backgroundColor: isLooping ? '#1565c0' : 'rgba(0, 0, 0, 0.04)'
+                                }
+                            }}
+                        >
+                            <RepeatOneIcon />
                         </IconButton>
                     </Box>
 

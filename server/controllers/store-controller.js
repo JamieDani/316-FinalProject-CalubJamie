@@ -293,6 +293,17 @@ getUserProfilePictureByEmail = async (req, res) => {
         }));
 };
 
+addSongListen = async (req, res) => {
+    console.log("addSongListen with id:", req.params.id);
+
+    db.incrementSongListens(req.params.id)
+        .then(song => res.status(200).json({ success: true, song }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error incrementing song listens'
+        }));
+};
+
 module.exports = {
     createPlaylist,
     copyPlaylist,
@@ -308,5 +319,6 @@ module.exports = {
     updateSong,
     deleteSong,
     getSongsOfPlaylist,
-    getUserProfilePictureByEmail
+    getUserProfilePictureByEmail,
+    addSongListen
 }

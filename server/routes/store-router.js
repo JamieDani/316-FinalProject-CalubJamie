@@ -23,6 +23,7 @@ router.post('/song', auth.verify, StoreController.addSong)
 router.get('/songs', StoreController.getSongs)
 router.put('/song/:id', auth.verify, StoreController.updateSong)
 router.delete('/song/:id', auth.verify, StoreController.deleteSong)
+router.put('/song/:id/listen', StoreController.addSongListen)
 router.get('/user/profile-picture', StoreController.getUserProfilePictureByEmail)
 
 module.exports = router

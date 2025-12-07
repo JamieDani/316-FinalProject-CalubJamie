@@ -77,7 +77,7 @@ function SongCard(props) {
             </Typography>
             <Box sx={{ display: 'flex', gap: 3 }}>
                 <Typography variant="body2" color="text.secondary">
-                    listens: {song.numListeners}
+                    listens: {song.numListens}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                     playlists: {song.numPlaylists}

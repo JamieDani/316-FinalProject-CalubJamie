@@ -187,6 +187,12 @@ export const getUserProfilePictureByEmail = (email) => {
     });
 }
 
+export const addSongListen = (songId) => {
+    return fetchWrapper(`${BASE_URL}/song/${songId}/listen`, {
+        method: 'PUT'
+    });
+}
+
 const apis = {
     createPlaylist,
     copyPlaylist,
@@ -202,7 +208,8 @@ const apis = {
     updateSong,
     deleteSong,
     getSongsOfPlaylist,
-    getUserProfilePictureByEmail
+    getUserProfilePictureByEmail,
+    addSongListen
 }
 
 export default apis

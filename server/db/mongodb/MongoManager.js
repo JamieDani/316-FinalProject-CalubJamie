@@ -325,7 +325,7 @@ class MongoManager extends DatabaseManager {
                 ownerUsername,
                 ownerEmail,
                 numPlaylists: 0,
-                numListeners: 0
+                numListens: 0
             });
             console.log("New song object created:", newSong);
             await newSong.save();
@@ -380,6 +380,20 @@ class MongoManager extends DatabaseManager {
             return;
         } catch (err) {
             console.error("Error in MongoManager deleteSong:", err);
+            throw err;
+        }
+    }
+
+    async incrementSongListens(songId) {
+        try {
+            const song = await Song.findById(songId);
+            if (!song) throw new Error("song not found");
+
+            song.numListens += 1;
+            await song.save();
+            return song;
+        } catch (err) {
+            console.error("Error in MongoManager incrementSongListens:", err);
             throw err;
         }
     }

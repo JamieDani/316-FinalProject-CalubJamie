@@ -1,5 +1,5 @@
 import { Box, Typography, TextField, Button, Divider, Stack, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import AuthContext from '../auth';
 import storeRequestSender from '../store/requests';
 import SongCard from './SongCard';
@@ -20,6 +20,7 @@ const SongCatalogScreen = () => {
     const [artistFilter, setArtistFilter] = useState("");
     const [yearFilter, setYearFilter] = useState("");
     const [selectedSongForPlayer, setSelectedSongForPlayer] = useState(null);
+    const lastTrackedSongRef = useRef(null);
 
     useEffect(() => {
         fetchSongs();
@@ -99,6 +100,28 @@ const SongCatalogScreen = () => {
         setSelectedSongForPlayer(song);
     };
 
+    const handleSongPlay = async (song) => {
+        if (!song || !song._id) return;
+
+        if (lastTrackedSongRef.current !== song._id) {
+            try {
+                const response = await storeRequestSender.addSongListen(song._id);
+                lastTrackedSongRef.current = song._id;
+                console.log("Song listen tracked for:", song.title);
+
+                if (response.data.success && response.data.song) {
+                    setSongs(prevSongs =>
+                        prevSongs.map(s =>
+                            s._id === song._id ? { ...s, numListens: response.data.song.numListens } : s
+                        )
+                    );
+                }
+            } catch (error) {
+                console.error("Error tracking song listen:", error);
+            }
+        }
+    };
+
     return (
         <>
             <AddSongModal open={isAddSongModalOpen} onClose={handleCloseAddSongModal} mode="add" />
@@ -150,7 +173,10 @@ const SongCatalogScreen = () => {
                     </Box>
 
                     <Box>
-                        <YouTubePlayer videoId={selectedSongForPlayer?.youTubeId} />
+                        <YouTubePlayer
+                            videoId={selectedSongForPlayer?.youTubeId}
+                            onPlay={() => handleSongPlay(selectedSongForPlayer)}
+                        />
                     </Box>
                 </Stack>
             </Box>
@@ -173,6 +199,14 @@ const SongCatalogScreen = () => {
                         >
                             <MenuItem value="listens-hi-lo">Listens (Hi-Lo)</MenuItem>
                             <MenuItem value="listens-lo-hi">Listens (Lo-Hi)</MenuItem>
+                            <MenuItem value="playlists-hi-lo">Playlists (Hi-Lo)</MenuItem>
+                            <MenuItem value="playlists-lo-hi">Playlists (Lo-Hi)</MenuItem>
+                            <MenuItem value="year-a-z">Song title (A-Z)</MenuItem>
+                            <MenuItem value="year-z-a">Song title (Z-A)</MenuItem>
+                            <MenuItem value="artist-a-z">Song artist (A-Z)</MenuItem>
+                            <MenuItem value="artist-z-a">Song artist (Z-A)</MenuItem>
+                            <MenuItem value="year-hi-lo">Song year (Hi-Lo)</MenuItem>
+                            <MenuItem value="year-lo-hi">Song year (Lo-Hi)</MenuItem>
                         </Select>
                     </FormControl>
                 </Box>
