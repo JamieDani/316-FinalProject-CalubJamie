@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import AuthContext from '../auth';
 import { GlobalStoreContext } from '../store'
 
@@ -19,8 +19,14 @@ import Typography from '@mui/material/Typography';
 export default function AppBanner() {
     const { auth } = useContext(AuthContext);
     const { store } = useContext(GlobalStoreContext);
+    const location = useLocation();
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
+
+    const hideNavButtons =
+        (location.pathname === '/' && !auth.loggedIn) ||
+        location.pathname === '/register/' ||
+        location.pathname === '/edit-account/';
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -119,24 +125,26 @@ export default function AppBanner() {
                     >
                         <Link onClick={handleHouseClick} style={{ textDecoration: 'none', color: 'white' }} to='/'>⌂</Link>
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 2, ml: 4 }}>
-                        <Button
-                            color="inherit"
-                            component={Link}
-                            to="/playlists/"
-                            sx={{ fontSize: '1rem' }}
-                        >
-                            Playlists
-                        </Button>
-                        <Button
-                            color="inherit"
-                            component={Link}
-                            to="/song-catalog/"
-                            sx={{ fontSize: '1rem' }}
-                        >
-                            Song Catalog
-                        </Button>
-                    </Box>
+                    {!hideNavButtons && (
+                        <Box sx={{ display: 'flex', gap: 2, ml: 4 }}>
+                            <Button
+                                color="inherit"
+                                component={Link}
+                                to="/playlists/"
+                                sx={{ fontSize: '1rem' }}
+                            >
+                                Playlists
+                            </Button>
+                            <Button
+                                color="inherit"
+                                component={Link}
+                                to="/song-catalog/"
+                                sx={{ fontSize: '1rem' }}
+                            >
+                                Song Catalog
+                            </Button>
+                        </Box>
+                    )}
                     <Box sx={{ flexGrow: 1 }}>{editToolbar}</Box>
                     <Box sx={{ height: "90px", display: { xs: 'none', md: 'flex' } }}>
                         <IconButton
