@@ -20,6 +20,7 @@ const SongCatalogScreen = () => {
     const [artistFilter, setArtistFilter] = useState("");
     const [yearFilter, setYearFilter] = useState("");
     const [selectedSongForPlayer, setSelectedSongForPlayer] = useState(null);
+    const [sortMethod, setSortMethod] = useState("");
     const lastTrackedSongRef = useRef(null);
 
     useEffect(() => {
@@ -122,6 +123,39 @@ const SongCatalogScreen = () => {
         }
     };
 
+    const handleSortChange = (event) => {
+        setSortMethod(event.target.value);
+    };
+
+    const getSortedSongs = () => {
+        const songsCopy = [...songs];
+
+        switch (sortMethod) {
+            case "listens-hi-lo":
+                return songsCopy.sort((a, b) => (b.numListens || 0) - (a.numListens || 0));
+            case "listens-lo-hi":
+                return songsCopy.sort((a, b) => (a.numListens || 0) - (b.numListens || 0));
+            case "playlists-hi-lo":
+                return songsCopy.sort((a, b) => (b.numPlaylists || 0) - (a.numPlaylists || 0));
+            case "playlists-lo-hi":
+                return songsCopy.sort((a, b) => (a.numPlaylists || 0) - (b.numPlaylists || 0));
+            case "year-a-z":
+                return songsCopy.sort((a, b) => a.title.localeCompare(b.title));
+            case "year-z-a":
+                return songsCopy.sort((a, b) => b.title.localeCompare(a.title));
+            case "artist-a-z":
+                return songsCopy.sort((a, b) => a.artist.localeCompare(b.artist));
+            case "artist-z-a":
+                return songsCopy.sort((a, b) => b.artist.localeCompare(a.artist));
+            case "year-hi-lo":
+                return songsCopy.sort((a, b) => b.year - a.year);
+            case "year-lo-hi":
+                return songsCopy.sort((a, b) => a.year - b.year);
+            default:
+                return songsCopy;
+        }
+    };
+
     return (
         <>
             <AddSongModal open={isAddSongModalOpen} onClose={handleCloseAddSongModal} mode="add" />
@@ -195,7 +229,8 @@ const SongCatalogScreen = () => {
                         <InputLabel>Sort Method</InputLabel>
                         <Select
                             label="Sort Method"
-                            defaultValue=""
+                            value={sortMethod}
+                            onChange={handleSortChange}
                         >
                             <MenuItem value="listens-hi-lo">Listens (Hi-Lo)</MenuItem>
                             <MenuItem value="listens-lo-hi">Listens (Lo-Hi)</MenuItem>
@@ -212,7 +247,7 @@ const SongCatalogScreen = () => {
                 </Box>
 
                 <Box sx={{ flex: 1, overflowY: 'auto', mb: 2 }}>
-                    {songs.map((song, index) => (
+                    {getSortedSongs().map((song, index) => (
                         <SongCard
                             key={song._id || index}
                             song={song}
