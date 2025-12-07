@@ -1,4 +1,4 @@
-import { Box, Typography, TextField, Button, Divider, Stack } from '@mui/material';
+import { Box, Typography, TextField, Button, Divider, Stack, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useState, useContext, useEffect } from 'react';
 import AuthContext from '../auth';
 import storeRequestSender from '../store/requests';
@@ -13,6 +13,7 @@ const PlaylistsScreen = () => {
     const [currentPlaylist, setCurrentPlaylist] = useState(null);
     const [playlistToDelete, setPlaylistToDelete] = useState(null);
     const [playlists, setPlaylists] = useState([]);
+    const [sortMethod, setSortMethod] = useState("");
 
     const [filters, setFilters] = useState({
         name: '',
@@ -146,6 +147,27 @@ const PlaylistsScreen = () => {
         }
     };
 
+    const getSortedPlaylists = () => {
+        const playlistsCopy = [...playlists];
+
+        switch (sortMethod) {
+            case "listeners-hi-lo":
+                return playlistsCopy.sort((a, b) => (b.numListeners || 0) - (a.numListeners || 0));
+            case "listeners-lo-hi":
+                return playlistsCopy.sort((a, b) => (a.numListeners || 0) - (b.numListeners || 0));
+            case "name-a-z":
+                return playlistsCopy.sort((a, b) => a.name.localeCompare(b.name));
+            case "name-z-a":
+                return playlistsCopy.sort((a, b) => b.name.localeCompare(a.name));
+            case "username-a-z":
+                return playlistsCopy.sort((a, b) => a.ownerUsername.localeCompare(b.ownerUsername));
+            case "username-z-a":
+                return playlistsCopy.sort((a, b) => b.ownerUsername.localeCompare(a.ownerUsername));
+            default:
+                return playlistsCopy;
+        }
+    };
+
     return (
         <>
             <EditPlaylistModal
@@ -226,8 +248,27 @@ const PlaylistsScreen = () => {
                 flexDirection: 'column',
                 padding: 4
             }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Typography variant="body1">Sort:</Typography>
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Sort Method</InputLabel>
+                        <Select
+                            label="Sort Method"
+                            value={sortMethod}
+                            onChange={(e) => setSortMethod(e.target.value)}
+                        >
+                            <MenuItem value="listeners-hi-lo">Listeners (Hi-Lo)</MenuItem>
+                            <MenuItem value="listeners-lo-hi">Listeners (Lo-Hi)</MenuItem>
+                            <MenuItem value="name-a-z">Playlist name (A-Z)</MenuItem>
+                            <MenuItem value="name-z-a">Playlist name (Z-A)</MenuItem>
+                            <MenuItem value="username-a-z">Username (A-Z)</MenuItem>
+                            <MenuItem value="username-z-a">Username (Z-A)</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
+
                 <Box sx={{ flex: 1, overflowY: 'auto', mb: 2 }}>
-                    {playlists.map((playlist, index) => (
+                    {getSortedPlaylists().map((playlist, index) => (
                         <PlaylistCard
                             key={playlist._id || index}
                             playlist={playlist}
