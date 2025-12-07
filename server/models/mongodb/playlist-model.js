@@ -14,7 +14,9 @@ const playlistSchema = new Schema(
         name: { type: String, required: true },
         ownerUsername: { type: String, required: true },
         ownerEmail: { type: String, required: true },
-        songs: [{type: ObjectId, ref: 'Song'}]
+        songs: [{type: ObjectId, ref: 'Song'}],
+        listenerList: [{ type: String }],
+        numListeners: { type: Number, default: 0 }
     },
     { timestamps: true },
 )

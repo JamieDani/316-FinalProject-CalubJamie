@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { Dialog, Box, Typography, Button, Avatar, IconButton } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -7,8 +7,10 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import RepeatOneIcon from '@mui/icons-material/RepeatOne';
 import storeRequestSender from '../store/requests';
 import YouTubePlayer from './YouTubePlayer';
+import AuthContext from '../auth';
 
 const PlayPlaylistScreen = ({ open, onClose, playlist }) => {
+    const { auth } = useContext(AuthContext);
     const [songs, setSongs] = useState([]);
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(true);
@@ -21,6 +23,7 @@ const PlayPlaylistScreen = ({ open, onClose, playlist }) => {
         if (open && playlist) {
             fetchPlaylistSongs();
             fetchProfilePicture();
+            trackPlaylistPlay();
             setCurrentSongIndex(0);
             setIsPlaying(true);
         }
@@ -45,6 +48,16 @@ const PlayPlaylistScreen = ({ open, onClose, playlist }) => {
             }
         } catch (error) {
             console.error("Error fetching profile picture:", error);
+        }
+    };
+
+    const trackPlaylistPlay = async () => {
+        try {
+            const userEmail = auth.user?.email || null;
+            await storeRequestSender.trackPlaylistPlay(playlist._id, userEmail);
+            console.log("Playlist play tracked");
+        } catch (error) {
+            console.error("Error tracking playlist play:", error);
         }
     };
 

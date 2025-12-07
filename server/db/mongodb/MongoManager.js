@@ -151,6 +151,30 @@ class MongoManager extends DatabaseManager {
         }
       }
 
+    async trackPlaylistListener(playlistId, userEmail) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            const listenerIdentifier = userEmail || "Guest";
+
+            if (!playlist.listenerList) {
+                playlist.listenerList = [];
+            }
+
+            if (!playlist.listenerList.includes(listenerIdentifier)) {
+                playlist.listenerList.push(listenerIdentifier);
+                playlist.numListeners = playlist.listenerList.length;
+                await playlist.save();
+            }
+
+            return playlist;
+        } catch (err) {
+            console.error("Error in MongoManager trackPlaylistListener:", err);
+            throw err;
+        }
+    }
+
     getPlaylistById(userId, playlistId) {
         return new Promise((resolve, reject) => {
             Playlist.findById({ _id: playlistId }, (err, list) => {

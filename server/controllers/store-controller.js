@@ -304,6 +304,19 @@ addSongListen = async (req, res) => {
         }));
 };
 
+trackPlaylistPlay = async (req, res) => {
+    console.log("trackPlaylistPlay with id:", req.params.id);
+
+    const userEmail = req.body.userEmail || null;
+
+    db.trackPlaylistListener(req.params.id, userEmail)
+        .then(playlist => res.status(200).json({ success: true, playlist }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error tracking playlist listener'
+        }));
+};
+
 module.exports = {
     createPlaylist,
     copyPlaylist,
@@ -320,5 +333,6 @@ module.exports = {
     deleteSong,
     getSongsOfPlaylist,
     getUserProfilePictureByEmail,
-    addSongListen
+    addSongListen,
+    trackPlaylistPlay
 }

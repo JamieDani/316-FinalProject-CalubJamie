@@ -193,6 +193,13 @@ export const addSongListen = (songId) => {
     });
 }
 
+export const trackPlaylistPlay = (playlistId, userEmail) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/play`, {
+        method: 'PUT',
+        body: JSON.stringify({ userEmail })
+    });
+}
+
 const apis = {
     createPlaylist,
     copyPlaylist,
@@ -209,7 +216,8 @@ const apis = {
     deleteSong,
     getSongsOfPlaylist,
     getUserProfilePictureByEmail,
-    addSongListen
+    addSongListen,
+    trackPlaylistPlay
 }
 
 export default apis
