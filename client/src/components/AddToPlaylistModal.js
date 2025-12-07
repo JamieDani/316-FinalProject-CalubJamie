@@ -24,7 +24,7 @@ const style = {
     flexDirection: 'column'
 };
 
-export default function AddToPlaylistModal({ open, onClose, song }) {
+export default function AddToPlaylistModal({ open, onClose, song, onSongAdded }) {
     const [playlists, setPlaylists] = useState([]);
 
     useEffect(() => {
@@ -50,6 +50,11 @@ export default function AddToPlaylistModal({ open, onClose, song }) {
         try {
             await storeRequestSender.addSongToPlaylist(playlistId, song._id);
             console.log("Song added to playlist successfully");
+
+            if (onSongAdded) {
+                onSongAdded(song._id);
+            }
+
             onClose();
         } catch (error) {
             console.error("Error adding song to playlist:", error);

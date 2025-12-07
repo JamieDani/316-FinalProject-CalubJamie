@@ -97,6 +97,14 @@ const SongCatalogScreen = () => {
         setSelectedSong(null);
     };
 
+    const handleSongAddedToPlaylist = (songId) => {
+        setSongs(prevSongs =>
+            prevSongs.map(s =>
+                s._id === songId ? { ...s, numPlaylists: (s.numPlaylists || 0) + 1 } : s
+            )
+        );
+    };
+
     const handleSongClick = (song) => {
         setSelectedSongForPlayer(song);
     };
@@ -161,7 +169,7 @@ const SongCatalogScreen = () => {
             <AddSongModal open={isAddSongModalOpen} onClose={handleCloseAddSongModal} mode="add" />
             <AddSongModal open={isEditSongModalOpen} onClose={handleCloseEditSongModal} mode="edit" song={selectedSong} />
             <DeleteSongConfirmModal open={isDeleteModalOpen} onClose={handleCloseDeleteModal} song={selectedSong} />
-            <AddToPlaylistModal open={isAddToPlaylistModalOpen} onClose={handleCloseAddToPlaylistModal} song={selectedSong} />
+            <AddToPlaylistModal open={isAddToPlaylistModalOpen} onClose={handleCloseAddToPlaylistModal} song={selectedSong} onSongAdded={handleSongAddedToPlaylist} />
         <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#ffe4e1' }}>
             <Box sx={{
                 flex: 1,

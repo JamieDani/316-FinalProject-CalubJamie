@@ -185,15 +185,13 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
 
     const removeSongAtIndex = async (index) => {
         const newSongs = [...songsRef.current];
+        const removedSong = newSongs[index];
         newSongs.splice(index, 1);
 
         setSongs(newSongs);
 
-        const songIds = newSongs.map(song => song._id);
         try {
-            await storeRequestSender.updatePlaylistById(playlist._id, {
-                songs: songIds
-            });
+            await storeRequestSender.removeSongFromPlaylist(playlist._id, removedSong._id);
         } catch (error) {
             console.error("Error removing song from playlist:", error);
             fetchSongs();

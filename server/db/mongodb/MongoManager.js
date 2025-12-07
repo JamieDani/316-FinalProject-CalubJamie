@@ -103,6 +103,14 @@ class MongoManager extends DatabaseManager {
 
             await newPlaylist.save();
 
+            for (const songId of newPlaylist.songs) {
+                const song = await Song.findById(songId);
+                if (song) {
+                    song.numPlaylists += 1;
+                    await song.save();
+                }
+            }
+
             user.playlists.push(newPlaylist._id);
             await user.save();
 
@@ -122,6 +130,14 @@ class MongoManager extends DatabaseManager {
 
           if (owner._id.toString() !== userId.toString()) {
             throw new Error("authentication error");
+          }
+
+          for (const songId of playlist.songs) {
+            const song = await Song.findById(songId);
+            if (song && song.numPlaylists > 0) {
+              song.numPlaylists -= 1;
+              await song.save();
+            }
           }
 
           await Playlist.findByIdAndDelete(playlistId);
@@ -285,6 +301,12 @@ class MongoManager extends DatabaseManager {
                     playlist.songs.splice(index, 0, songId);
                 }
                 await playlist.save();
+
+                const song = await Song.findById(songId);
+                if (song) {
+                    song.numPlaylists += 1;
+                    await song.save();
+                }
             }
 
             return playlist;
@@ -305,8 +327,17 @@ class MongoManager extends DatabaseManager {
                 throw new Error("authentication error");
             }
 
+            const songWasInPlaylist = playlist.songs.some(id => id.toString() === songId.toString());
             playlist.songs = playlist.songs.filter(id => id.toString() !== songId.toString());
             await playlist.save();
+
+            if (songWasInPlaylist) {
+                const song = await Song.findById(songId);
+                if (song && song.numPlaylists > 0) {
+                    song.numPlaylists -= 1;
+                    await song.save();
+                }
+            }
 
             return playlist;
         } catch (err) {
