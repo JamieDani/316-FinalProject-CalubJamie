@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom'
 import AuthContext from '../auth'
 import MUIErrorModal from './MUIErrorModal'
@@ -23,6 +23,40 @@ export default function EditAccountScreen() {
     const [profileImage, setProfileImage] = useState(null);
     const [profileImageBase64, setProfileImageBase64] = useState(null);
     const [imageError, setImageError] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordVerify, setPasswordVerify] = useState('');
+    const [hasChanges, setHasChanges] = useState(false);
+    const [initialData, setInitialData] = useState({
+        username: '',
+        profilePicture: null
+    });
+
+    useEffect(() => {
+        if (auth.user) {
+            const currentUsername = auth.user.username || '';
+            const currentProfilePicture = auth.user.profilePicture || null;
+
+            setUsername(currentUsername);
+            setInitialData({
+                username: currentUsername,
+                profilePicture: currentProfilePicture
+            });
+
+            if (currentProfilePicture) {
+                setProfileImage(currentProfilePicture);
+                setProfileImageBase64(currentProfilePicture);
+            }
+        }
+    }, [auth.user]);
+
+    useEffect(() => {
+        const usernameChanged = username !== initialData.username;
+        const passwordChanged = password !== '' || passwordVerify !== '';
+        const profilePictureChanged = profileImageBase64 !== initialData.profilePicture;
+
+        setHasChanges(usernameChanged || passwordChanged || profilePictureChanged);
+    }, [username, password, passwordVerify, profileImageBase64, initialData]);
 
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
@@ -65,12 +99,11 @@ export default function EditAccountScreen() {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        const formData = new FormData(event.currentTarget);
         auth.updateUser(
-            formData.get('username'),
-            formData.get('email'),
-            formData.get('password'),
-            formData.get('passwordVerify'),
+            username,
+            auth.user.email,
+            password,
+            passwordVerify,
             profileImageBase64
         );
     };
@@ -146,6 +179,8 @@ export default function EditAccountScreen() {
                                     id="username"
                                     label="Username"
                                     autoFocus
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -156,28 +191,33 @@ export default function EditAccountScreen() {
                                     label="Email Address"
                                     name="email"
                                     autoComplete="email"
+                                    value={auth.user?.email || ''}
+                                    disabled
+                                    helperText="You can't change your email"
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    required
                                     fullWidth
                                     name="password"
                                     label="Password"
                                     type="password"
                                     id="password"
                                     autoComplete="new-password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    required
                                     fullWidth
                                     name="passwordVerify"
                                     label="Password Verify"
                                     type="password"
                                     id="passwordVerify"
                                     autoComplete="new-password"
+                                    value={passwordVerify}
+                                    onChange={(e) => setPasswordVerify(e.target.value)}
                                 />
                             </Grid>
                         </Grid>
@@ -186,8 +226,9 @@ export default function EditAccountScreen() {
                             fullWidth
                             variant="contained"
                             type="submit"
+                            disabled={!hasChanges}
                         >
-                            Complete
+                            Confirm Changes
                         </Button>
 
                         <Button
