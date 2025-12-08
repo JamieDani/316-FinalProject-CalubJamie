@@ -28,6 +28,7 @@ export default function AddSongModal({ open, onClose, mode = "add", song = null 
     const [artist, setArtist] = useState("");
     const [year, setYear] = useState("");
     const [youTubeId, setYouTubeId] = useState("");
+    const [error, setError] = useState("");
 
     useEffect(() => {
         if (mode === "edit" && song) {
@@ -41,11 +42,43 @@ export default function AddSongModal({ open, onClose, mode = "add", song = null 
             setYear("");
             setYouTubeId("");
         }
+        setError("");
     }, [mode, song]);
 
-    function handleConfirmSong() {
+    const checkForDuplicateSong = async (excludeSongId = null) => {
+        try {
+            const response = await storeRequestSender.getSongs({
+                title: title,
+                artist: artist,
+                year: year
+            });
+
+            if (response.data.success && response.data.songs) {
+                const duplicate = response.data.songs.find(s =>
+                    s._id !== excludeSongId &&
+                    s.title.toLowerCase() === title.toLowerCase() &&
+                    s.artist.toLowerCase() === artist.toLowerCase() &&
+                    s.year === parseInt(year) &&
+                    s.youTubeId === youTubeId
+                );
+                return duplicate !== undefined;
+            }
+            return false;
+        } catch (error) {
+            console.error("Error checking for duplicate song:", error);
+            return false;
+        }
+    };
+
+    async function handleConfirmSong() {
         if (mode === "edit") {
             if (!song) return;
+
+            const isDuplicate = await checkForDuplicateSong(song._id);
+            if (isDuplicate) {
+                setError("A song with this title, artist, year, and YouTube ID already exists in the catalog.");
+                return;
+            }
 
             const updatedData = {
                 title,
@@ -65,6 +98,12 @@ export default function AddSongModal({ open, onClose, mode = "add", song = null 
         } else {
             if (!auth.user) {
                 console.error("No user logged in");
+                return;
+            }
+
+            const isDuplicate = await checkForDuplicateSong();
+            if (isDuplicate) {
+                setError("A song with this title, artist, year, and YouTube ID already exists in the catalog.");
                 return;
             }
 
@@ -91,23 +130,28 @@ export default function AddSongModal({ open, onClose, mode = "add", song = null 
         setArtist("");
         setYear("");
         setYouTubeId("");
+        setError("");
         onClose();
     }
 
     function handleUpdateTitle(event) {
         setTitle(event.target.value);
+        setError("");
     }
 
     function handleUpdateArtist(event) {
         setArtist(event.target.value);
+        setError("");
     }
 
     function handleUpdateYear(event) {
         setYear(event.target.value);
+        setError("");
     }
 
     function handleUpdateYouTubeId(event) {
         setYouTubeId(event.target.value);
+        setError("");
     }
 
     return (
@@ -140,6 +184,13 @@ export default function AddSongModal({ open, onClose, mode = "add", song = null 
                         id="modal-modal-youTubeId" variant="h6" component="h2">
                         YouTubeId: <input id="song-modal-youTubeId-textfield" className='modal-textfield' type="text" value={youTubeId} onChange={handleUpdateYouTubeId} />
                     </Typography>
+                    {error && (
+                        <Typography
+                            sx={{color: "red", fontWeight:"bold", fontSize:"14px", mt:"10px"}}
+                            variant="body2">
+                            {error}
+                        </Typography>
+                    )}
                     <Button
                         sx={{color: "#8932CC", backgroundColor: "#CBC3E3", fontSize: 13, fontWeight: 'bold', border: 2, p:"5px", mt:"20px"}} variant="outlined"
                         id="song-confirm-button" onClick={handleConfirmSong}>Save</Button>
