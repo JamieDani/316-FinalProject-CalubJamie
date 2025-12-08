@@ -147,6 +147,16 @@ export const addSong = (title, artist, year, youTubeId, ownerUsername, ownerEmai
     });
 }
 
+export const copySong = (songId, ownerUsername, ownerEmail) => {
+    return fetchWrapper(`${BASE_URL}/song/${songId}/copy`, {
+        method: 'POST',
+        body: JSON.stringify({
+            ownerUsername,
+            ownerEmail
+        })
+    });
+}
+
 export const getSongs = (filters = {}) => {
     const queryParams = new URLSearchParams();
 
@@ -211,6 +221,7 @@ const apis = {
     addSongToPlaylist,
     removeSongFromPlaylist,
     addSong,
+    copySong,
     getSongs,
     updateSong,
     deleteSong,

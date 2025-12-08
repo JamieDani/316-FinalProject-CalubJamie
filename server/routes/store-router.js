@@ -21,6 +21,7 @@ router.delete('/playlist/:id/song/:songId', auth.verify, StoreController.removeS
 router.get('/playlist/:id/songs', StoreController.getSongsOfPlaylist)
 router.put('/playlist/:id/play', StoreController.trackPlaylistPlay)
 router.post('/song', auth.verify, StoreController.addSong)
+router.post('/song/:id/copy', auth.verify, StoreController.copySong)
 router.get('/songs', StoreController.getSongs)
 router.put('/song/:id', auth.verify, StoreController.updateSong)
 router.delete('/song/:id', auth.verify, StoreController.deleteSong)

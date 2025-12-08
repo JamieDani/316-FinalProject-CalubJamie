@@ -484,6 +484,31 @@ class MongoManager extends DatabaseManager {
         }
     }
 
+    async copySong(songId, ownerUsername, ownerEmail) {
+        try {
+            const originalSong = await Song.findById(songId);
+            if (!originalSong) throw new Error("song not found");
+
+            const newSong = new Song({
+                title: originalSong.title,
+                artist: originalSong.artist,
+                year: originalSong.year,
+                youTubeId: originalSong.youTubeId,
+                ownerUsername: ownerUsername,
+                ownerEmail: ownerEmail,
+                numPlaylists: 0,
+                numListens: 0,
+                playlists: []
+            });
+
+            await newSong.save();
+            return newSong;
+        } catch (err) {
+            console.error("Error in MongoManager copySong:", err);
+            throw err;
+        }
+    }
+
     async getSongsOfPlaylist(playlistId) {
         try {
             const playlist = await Playlist.findById(playlistId);

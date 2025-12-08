@@ -2,7 +2,7 @@ import { Box, Typography, IconButton } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
 
-function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDragEnter, onDelete }) {
+function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDragEnter, onDelete, onCopy }) {
     const handleDragStart = (e) => {
         e.dataTransfer.effectAllowed = 'move';
         if (onDragStart) {
@@ -36,6 +36,12 @@ function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDrag
         }
     };
 
+    const handleCopy = () => {
+        if (onCopy) {
+            onCopy(song, index);
+        }
+    };
+
     return (
         <Box
             draggable
@@ -62,7 +68,7 @@ function PlaylistSongCard({ song, index, onDragStart, onDragOver, onDrop, onDrag
                 {index + 1}. {song.title} by {song.artist} ({song.year})
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton size="small">
+                <IconButton size="small" onClick={handleCopy}>
                     <ContentCopyIcon fontSize="small" />
                 </IconButton>
                 <IconButton size="small" onClick={handleDelete}>

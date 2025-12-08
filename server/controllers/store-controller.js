@@ -317,6 +317,31 @@ trackPlaylistPlay = async (req, res) => {
         }));
 };
 
+copySong = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const body = req.body;
+    if (!body || !body.ownerUsername || !body.ownerEmail) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide owner information',
+        });
+    }
+
+    console.log("copySong with id:", req.params.id);
+
+    db.copySong(req.params.id, body.ownerUsername, body.ownerEmail)
+        .then(song => res.status(201).json({ success: true, song }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not copied!'
+        }));
+};
+
 module.exports = {
     createPlaylist,
     copyPlaylist,
@@ -334,5 +359,6 @@ module.exports = {
     getSongsOfPlaylist,
     getUserProfilePictureByEmail,
     addSongListen,
-    trackPlaylistPlay
+    trackPlaylistPlay,
+    copySong
 }

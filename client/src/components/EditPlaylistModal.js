@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
+import AuthContext from '../auth';
 import storeRequestSender from '../store/requests';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -63,6 +64,29 @@ class RemoveSong_Transaction extends jsTPS_Transaction {
     }
 }
 
+class CopySong_Transaction extends jsTPS_Transaction {
+    constructor(modal, originalSong, targetIndex, auth) {
+        super();
+        this.modal = modal;
+        this.originalSong = originalSong;
+        this.targetIndex = targetIndex;
+        this.auth = auth;
+        this.copiedSong = null;
+    }
+
+    async executeDo() {
+        const result = await this.modal.copySongAtIndex(this.originalSong, this.targetIndex, this.auth);
+        this.copiedSong = result;
+    }
+
+    async executeUndo() {
+        if (this.copiedSong) {
+            await this.modal.deleteCopiedSong(this.copiedSong);
+            this.copiedSong = null;
+        }
+    }
+}
+
 const style = {
     position: 'absolute',
     top: '50%',
@@ -79,6 +103,7 @@ const style = {
 };
 
 export default function EditPlaylistModal({ open, onClose, playlist }) {
+    const { auth } = useContext(AuthContext);
     const history = useHistory();
     const [playlistTitle, setPlaylistTitle] = useState("Untitled Playlist");
     const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -147,6 +172,55 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
         addRemoveSongTransaction(song, index);
     };
 
+    const handleCopySong = (song, index) => {
+        if (!auth.user || !song?._id || !playlist?._id) return;
+        addCopySongTransaction(song, index + 1);
+    };
+
+    const copySongAtIndex = async (originalSong, targetIndex, authContext) => {
+        try {
+            const response = await storeRequestSender.copySong(
+                originalSong._id,
+                authContext.user.username,
+                authContext.user.email
+            );
+
+            if (response.data.success) {
+                const newSong = response.data.song;
+                await storeRequestSender.addSongToPlaylist(playlist._id, newSong._id, targetIndex);
+
+                const newSongs = [...songsRef.current];
+                if (targetIndex === -1 || targetIndex >= newSongs.length) {
+                    newSongs.push(newSong);
+                } else {
+                    newSongs.splice(targetIndex, 0, newSong);
+                }
+                setSongs(newSongs);
+
+                console.log("Song copied and added to playlist successfully");
+                return newSong;
+            }
+        } catch (error) {
+            console.error("Error copying song:", error);
+            throw error;
+        }
+    };
+
+    const deleteCopiedSong = async (copiedSong) => {
+        try {
+            await storeRequestSender.removeSongFromPlaylist(playlist._id, copiedSong._id);
+            await storeRequestSender.deleteSong(copiedSong._id);
+
+            const newSongs = songsRef.current.filter(s => s._id !== copiedSong._id);
+            setSongs(newSongs);
+
+            console.log("Copied song deleted successfully");
+        } catch (error) {
+            console.error("Error deleting copied song:", error);
+            throw error;
+        }
+    };
+
     const moveSong = async (start, end) => {
         const newSongs = [...songsRef.current];
         const [movedSong] = newSongs.splice(start, 1);
@@ -207,6 +281,13 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
 
     const addRemoveSongTransaction = (song, index) => {
         const transaction = new RemoveSong_Transaction({ removeSongAtIndex, addSongAtIndex }, song, index);
+        tps.current.processTransaction(transaction);
+        setCanUndo(tps.current.hasTransactionToUndo());
+        setCanRedo(tps.current.hasTransactionToDo());
+    };
+
+    const addCopySongTransaction = (song, targetIndex) => {
+        const transaction = new CopySong_Transaction({ copySongAtIndex, deleteCopiedSong }, song, targetIndex, auth);
         tps.current.processTransaction(transaction);
         setCanUndo(tps.current.hasTransactionToUndo());
         setCanRedo(tps.current.hasTransactionToDo());
@@ -335,6 +416,7 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
                                 onDrop={handleDrop}
                                 onDragEnter={handleDragEnter}
                                 onDelete={handleRemoveSong}
+                                onCopy={handleCopySong}
                             />
                         ))
                     ) : (
