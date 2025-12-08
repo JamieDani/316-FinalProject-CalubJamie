@@ -54,6 +54,12 @@ const SongCatalogScreen = () => {
         fetchSongs();
     };
 
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     const handleAddSong = () => {
         setIsAddSongModalOpen(true);
     };
@@ -189,6 +195,7 @@ const SongCatalogScreen = () => {
                         label="by Title"
                         value={titleFilter}
                         onChange={(e) => setTitleFilter(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     />
                     <TextField
                         fullWidth
@@ -196,6 +203,7 @@ const SongCatalogScreen = () => {
                         label="by Artist"
                         value={artistFilter}
                         onChange={(e) => setArtistFilter(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     />
                     <TextField
                         fullWidth
@@ -203,6 +211,7 @@ const SongCatalogScreen = () => {
                         label="by Year"
                         value={yearFilter}
                         onChange={(e) => setYearFilter(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     />
 
                     <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>

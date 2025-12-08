@@ -100,6 +100,12 @@ const PlaylistsScreen = () => {
         fetchPlaylistsWithFilters({});
     };
 
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     useEffect(() => {
         fetchPlaylists();
     }, []);
@@ -203,6 +209,7 @@ const PlaylistsScreen = () => {
                         label="by Playlist Name"
                         value={filters.name}
                         onChange={handleFilterChange('name')}
+                        onKeyDown={handleKeyDown}
                     />
                     <TextField
                         fullWidth
@@ -210,6 +217,7 @@ const PlaylistsScreen = () => {
                         label="by User Name"
                         value={filters.username}
                         onChange={handleFilterChange('username')}
+                        onKeyDown={handleKeyDown}
                     />
                     <TextField
                         fullWidth
@@ -217,6 +225,7 @@ const PlaylistsScreen = () => {
                         label="by Song Title"
                         value={filters.songTitle}
                         onChange={handleFilterChange('songTitle')}
+                        onKeyDown={handleKeyDown}
                     />
                     <TextField
                         fullWidth
@@ -224,6 +233,7 @@ const PlaylistsScreen = () => {
                         label="by Song Artist"
                         value={filters.songArtist}
                         onChange={handleFilterChange('songArtist')}
+                        onKeyDown={handleKeyDown}
                     />
                     <TextField
                         fullWidth
@@ -231,6 +241,7 @@ const PlaylistsScreen = () => {
                         label="by Song Year"
                         value={filters.songYear}
                         onChange={handleFilterChange('songYear')}
+                        onKeyDown={handleKeyDown}
                     />
 
                     <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
