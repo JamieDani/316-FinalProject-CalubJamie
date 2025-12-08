@@ -269,14 +269,16 @@ const SongCatalogScreen = () => {
                     ))}
                 </Box>
 
-                <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ alignSelf: 'flex-start' }}
-                    onClick={handleAddSong}
-                >
-                    Add Song
-                </Button>
+                {auth.user && (
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ alignSelf: 'flex-start' }}
+                        onClick={handleAddSong}
+                    >
+                        Add Song
+                    </Button>
+                )}
             </Box>
         </Box>
         </>

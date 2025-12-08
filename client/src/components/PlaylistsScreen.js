@@ -280,14 +280,16 @@ const PlaylistsScreen = () => {
                         />
                     ))}
                 </Box>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleAddPlaylist}
-                    sx={{ alignSelf: 'flex-start' }}
-                >
-                    Add Playlist
-                </Button>
+                {auth.user && (
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddPlaylist}
+                        sx={{ alignSelf: 'flex-start' }}
+                    >
+                        Add Playlist
+                    </Button>
+                )}
             </Box>
         </Box>
         </>
