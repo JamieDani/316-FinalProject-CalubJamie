@@ -205,24 +205,17 @@ registerUser = async (req, res) => {
         const savedUser = await db.createUser(username, email, passwordHash, profilePicture)
         console.log("new user saved: " + savedUser._id);
 
-        // LOGIN THE USER
-        const token = auth.signToken(savedUser._id);
-        console.log("token:" + token);
-
-        await res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none"
-        }).status(200).json({
+        // DO NOT LOGIN THE USER - just return success
+        res.status(201).json({
             success: true,
+            message: "Account created successfully. Please log in with your credentials.",
             user: {
                 username: savedUser.username,
-                email: savedUser.email,
-                profilePicture: savedUser.profilePicture
+                email: savedUser.email
             }
         })
 
-        console.log("token sent");
+        console.log("user registered successfully");
 
     } catch (err) {
         console.error(err);
