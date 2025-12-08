@@ -230,10 +230,36 @@ registerUser = async (req, res) => {
     }
 }
 
+checkEmail = async (req, res) => {
+    try {
+        const { email } = req.query;
+
+        if (!email) {
+            return res.status(400).json({
+                exists: false,
+                errorMessage: "Email parameter is required"
+            });
+        }
+
+        const existingUser = await db.getUserByEmail(email);
+
+        return res.status(200).json({
+            exists: existingUser !== null
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            exists: false,
+            errorMessage: "Error checking email"
+        });
+    }
+}
+
 module.exports = {
     getLoggedIn,
     registerUser,
     loginUser,
     logoutUser,
-    updateUser
+    updateUser,
+    checkEmail
 }
