@@ -24,7 +24,11 @@ const SongCatalogScreen = () => {
     const lastTrackedSongRef = useRef(null);
 
     useEffect(() => {
-        fetchSongs();
+        const initialFilters = {};
+        if (auth.user && auth.user.email) {
+            initialFilters.ownerEmail = auth.user.email;
+        }
+        fetchSongs(initialFilters);
     }, []);
 
     const fetchSongs = async (filters = {}) => {
@@ -44,6 +48,11 @@ const SongCatalogScreen = () => {
         if (artistFilter) filters.artist = artistFilter;
         if (yearFilter) filters.year = yearFilter;
 
+        const hasNoFilters = Object.keys(filters).length === 0;
+        if (hasNoFilters && auth.user && auth.user.email) {
+            filters.ownerEmail = auth.user.email;
+        }
+
         fetchSongs(filters);
     };
 
@@ -51,7 +60,11 @@ const SongCatalogScreen = () => {
         setTitleFilter("");
         setArtistFilter("");
         setYearFilter("");
-        fetchSongs();
+        const emptyFilters = {};
+        if (auth.user && auth.user.email) {
+            emptyFilters.ownerEmail = auth.user.email;
+        }
+        fetchSongs(emptyFilters);
     };
 
     const handleKeyDown = (event) => {

@@ -217,7 +217,8 @@ getSongs = async (req, res) => {
     const filters = {
         title: req.query.title,
         artist: req.query.artist,
-        year: req.query.year
+        year: req.query.year,
+        ownerEmail: req.query.ownerEmail
     };
 
     console.log("getSongs filters:", JSON.stringify(filters));

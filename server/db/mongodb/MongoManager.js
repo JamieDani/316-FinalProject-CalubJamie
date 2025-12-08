@@ -462,6 +462,7 @@ class MongoManager extends DatabaseManager {
             }
             if (filters.artist) query.artist = filters.artist;
             if (filters.year) query.year = parseInt(filters.year);
+            if (filters.ownerEmail) query.ownerEmail = filters.ownerEmail;
 
             const songs = await Song.find(query);
             return songs;

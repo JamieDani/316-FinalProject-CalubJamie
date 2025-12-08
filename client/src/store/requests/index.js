@@ -165,6 +165,7 @@ export const getSongs = (filters = {}) => {
     if (filters.title) queryParams.append('title', filters.title);
     if (filters.artist) queryParams.append('artist', filters.artist);
     if (filters.year) queryParams.append('year', filters.year);
+    if (filters.ownerEmail) queryParams.append('ownerEmail', filters.ownerEmail);
 
     const queryString = queryParams.toString();
     const url = queryString ? `${BASE_URL}/songs?${queryString}` : `${BASE_URL}/songs`;
