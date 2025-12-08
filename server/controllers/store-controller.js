@@ -310,12 +310,30 @@ trackPlaylistPlay = async (req, res) => {
 
     const userEmail = req.body.userEmail || null;
 
-    db.trackPlaylistListener(req.params.id, userEmail)
-        .then(playlist => res.status(200).json({ success: true, playlist }))
-        .catch(err => res.status(400).json({
+    try {
+        await db.updatePlaylistLastAccessed(req.params.id);
+        const playlist = await db.trackPlaylistListener(req.params.id, userEmail);
+        res.status(200).json({ success: true, playlist });
+    } catch (err) {
+        res.status(400).json({
             success: false,
-            errorMessage: err.message || 'Error tracking playlist listener'
-        }));
+            errorMessage: err.message || 'Error tracking playlist play'
+        });
+    }
+};
+
+updatePlaylistAccess = async (req, res) => {
+    console.log("updatePlaylistAccess with id:", req.params.id);
+
+    try {
+        const playlist = await db.updatePlaylistLastAccessed(req.params.id);
+        res.status(200).json({ success: true, playlist });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error updating playlist access time'
+        });
+    }
 };
 
 copySong = async (req, res) => {
@@ -361,5 +379,6 @@ module.exports = {
     getUserProfilePictureByEmail,
     addSongListen,
     trackPlaylistPlay,
+    updatePlaylistAccess,
     copySong
 }

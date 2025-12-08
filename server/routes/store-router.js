@@ -20,6 +20,7 @@ router.put('/playlist/:id/add-song', auth.verify, StoreController.addSongToPlayl
 router.delete('/playlist/:id/song/:songId', auth.verify, StoreController.removeSongFromPlaylist)
 router.get('/playlist/:id/songs', StoreController.getSongsOfPlaylist)
 router.put('/playlist/:id/play', StoreController.trackPlaylistPlay)
+router.put('/playlist/:id/access', StoreController.updatePlaylistAccess)
 router.post('/song', auth.verify, StoreController.addSong)
 router.post('/song/:id/copy', auth.verify, StoreController.copySong)
 router.get('/songs', StoreController.getSongs)

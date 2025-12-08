@@ -186,6 +186,21 @@ class MongoManager extends DatabaseManager {
         }
     }
 
+    async updatePlaylistLastAccessed(playlistId) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            playlist.lastAccessed = new Date();
+            await playlist.save();
+
+            return playlist;
+        } catch (err) {
+            console.error("Error in MongoManager updatePlaylistLastAccessed:", err);
+            throw err;
+        }
+    }
+
     getPlaylistById(userId, playlistId) {
         return new Promise((resolve, reject) => {
             Playlist.findById({ _id: playlistId }, (err, list) => {
@@ -219,7 +234,8 @@ class MongoManager extends DatabaseManager {
             const user = await User.findOne({ _id: userId });
             if (!user) throw new Error("user not found");
 
-            const playlists = await Playlist.find({ ownerEmail: user.email });
+            const playlists = await Playlist.find({ ownerEmail: user.email })
+                .sort({ lastAccessed: -1 });
             if (!playlists) {
                 throw new Error("no playlists found");
             }
@@ -228,7 +244,8 @@ class MongoManager extends DatabaseManager {
                 _id: list._id,
                 name: list.name,
                 ownerEmail: list.ownerEmail,
-                ownerUsername: list.ownerUsername
+                ownerUsername: list.ownerUsername,
+                lastAccessed: list.lastAccessed
             }));
 
             return pairs;

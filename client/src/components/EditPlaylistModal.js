@@ -119,6 +119,7 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
         if (playlist) {
             setPlaylistTitle(playlist.name);
             fetchSongs();
+            updatePlaylistAccess();
             tps.current.clearAllTransactions();
             setCanUndo(false);
             setCanRedo(false);
@@ -139,6 +140,15 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
         } catch (error) {
             console.error("Error fetching songs:", error);
             setSongs([]);
+        }
+    };
+
+    const updatePlaylistAccess = async () => {
+        if (!playlist?._id) return;
+        try {
+            await storeRequestSender.updatePlaylistAccess(playlist._id);
+        } catch (error) {
+            console.error("Error updating playlist access:", error);
         }
     };
 
