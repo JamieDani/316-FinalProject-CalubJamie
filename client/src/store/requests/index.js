@@ -57,11 +57,10 @@ const fetchWrapper = async (url, options = {}) => {
 }
 
 
-export const createPlaylist = (ownerUsername, ownerEmail) => {
+export const createPlaylist = (ownerEmail) => {
     return fetchWrapper(`${BASE_URL}/playlist/`, {
         method: 'POST',
         body: JSON.stringify({
-            ownerUsername,
             ownerEmail
         })
     });
@@ -99,6 +98,9 @@ export const getPlaylists = (filters = {}) => {
     if (filters.songTitle) queryParams.append('songTitle', filters.songTitle);
     if (filters.songArtist) queryParams.append('songArtist', filters.songArtist);
     if (filters.songYear) queryParams.append('songYear', filters.songYear);
+    if (filters.playlistIds && Array.isArray(filters.playlistIds)) {
+        queryParams.append('playlistIds', JSON.stringify(filters.playlistIds));
+    }
 
     const queryString = queryParams.toString();
     const url = queryString ? `${BASE_URL}/playlists?${queryString}` : `${BASE_URL}/playlists`;

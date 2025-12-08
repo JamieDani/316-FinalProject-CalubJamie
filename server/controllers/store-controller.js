@@ -25,7 +25,7 @@ createPlaylist = (req, res) => {
         })
     }
 
-    db.createPlaylist(req.userId, body.ownerUsername, body.ownerEmail)
+    db.createPlaylist(req.userId, body.ownerEmail)
     .then(playlist => res.status(201).json({ success: true, playlist }))
     .catch(err => res.status(400).json({ success: false, errorMessage: err.message || 'Playlist Not Created!' }));
 
@@ -96,7 +96,8 @@ getPlaylists = async (req, res) => {
         username: req.query.username,
         songTitle: req.query.songTitle,
         songArtist: req.query.songArtist,
-        songYear: req.query.songYear
+        songYear: req.query.songYear,
+        playlistIds: req.query.playlistIds ? JSON.parse(req.query.playlistIds) : null
     };
 
     console.log("getPlaylists filters:", JSON.stringify(filters));

@@ -1,7 +1,6 @@
 import { useContext, useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom'
 import AuthContext from '../auth'
-import MUIErrorModal from './MUIErrorModal'
 import Copyright from './Copyright'
 
 import Avatar from '@mui/material/Avatar';
@@ -15,7 +14,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { Stack, IconButton, Alert } from '@mui/material';
+import { Stack, IconButton } from '@mui/material';
 
 export default function EditAccountScreen() {
     const { auth } = useContext(AuthContext);
@@ -27,10 +26,15 @@ export default function EditAccountScreen() {
     const [password, setPassword] = useState('');
     const [passwordVerify, setPasswordVerify] = useState('');
     const [hasChanges, setHasChanges] = useState(false);
+    const [isFormValid, setIsFormValid] = useState(false);
     const [initialData, setInitialData] = useState({
         username: '',
         profilePicture: null
     });
+
+    const [usernameError, setUsernameError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordVerifyError, setPasswordVerifyError] = useState('');
 
     useEffect(() => {
         if (auth.user) {
@@ -51,12 +55,70 @@ export default function EditAccountScreen() {
     }, [auth.user]);
 
     useEffect(() => {
+        validateUsername(username);
+    }, [username]);
+
+    useEffect(() => {
+        validatePassword(password);
+    }, [password]);
+
+    useEffect(() => {
+        validatePasswordVerify(passwordVerify);
+    }, [passwordVerify, password]);
+
+    useEffect(() => {
         const usernameChanged = username !== initialData.username;
         const passwordChanged = password !== '' || passwordVerify !== '';
         const profilePictureChanged = profileImageBase64 !== initialData.profilePicture;
 
-        setHasChanges(usernameChanged || passwordChanged || profilePictureChanged);
-    }, [username, password, passwordVerify, profileImageBase64, initialData]);
+        const hasAnyChanges = usernameChanged || passwordChanged || profilePictureChanged;
+        setHasChanges(hasAnyChanges);
+
+        let isValid = true;
+
+        if (usernameChanged && (username.trim() === '' || usernameError !== '')) {
+            isValid = false;
+        }
+
+        if (passwordChanged) {
+            if (password.length > 0 && password.length < 8) {
+                isValid = false;
+            }
+            if (passwordError !== '' || passwordVerifyError !== '') {
+                isValid = false;
+            }
+        }
+
+        if (imageError !== '') {
+            isValid = false;
+        }
+
+        setIsFormValid(hasAnyChanges && isValid);
+    }, [username, password, passwordVerify, profileImageBase64, initialData, usernameError, passwordError, passwordVerifyError, imageError]);
+
+    const validateUsername = (value) => {
+        if (value.trim() === '') {
+            setUsernameError('Username cannot be empty');
+        } else {
+            setUsernameError('');
+        }
+    };
+
+    const validatePassword = (value) => {
+        if (value.length > 0 && value.length < 8) {
+            setPasswordError('Password must be at least 8 characters');
+        } else {
+            setPasswordError('');
+        }
+    };
+
+    const validatePasswordVerify = (value) => {
+        if (password !== '' && value !== password) {
+            setPasswordVerifyError('Passwords do not match');
+        } else {
+            setPasswordVerifyError('');
+        }
+    };
 
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
@@ -99,25 +161,20 @@ export default function EditAccountScreen() {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        auth.updateUser(
-            username,
-            auth.user.email,
-            password,
-            passwordVerify,
-            profileImageBase64
-        );
+        if (isFormValid) {
+            auth.updateUser(
+                username,
+                auth.user.email,
+                password,
+                passwordVerify,
+                profileImageBase64
+            );
+        }
     };
 
     const handleCancel = () => {
         history.push('/');
     };
-
-    let modalJSX = ""
-    console.log(auth);
-    if (auth.errorMessage !== null){
-        modalJSX = <MUIErrorModal />;
-    }
-    console.log(modalJSX);
 
     return (
             <Container component="main" maxWidth="xs">
@@ -160,9 +217,9 @@ export default function EditAccountScreen() {
                     </Box>
                     
                     {imageError && (
-                        <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+                        <Typography color="error" variant="caption" sx={{ mt: 1 }}>
                             {imageError}
-                        </Alert>
+                        </Typography>
                     )}
                     
                     <Typography component="h1" variant="h5" sx={{ mt: 2 }}>
@@ -181,6 +238,8 @@ export default function EditAccountScreen() {
                                     autoFocus
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
+                                    error={usernameError !== ''}
+                                    helperText={usernameError}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -206,6 +265,8 @@ export default function EditAccountScreen() {
                                     autoComplete="new-password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
+                                    error={passwordError !== ''}
+                                    helperText={passwordError}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -218,6 +279,8 @@ export default function EditAccountScreen() {
                                     autoComplete="new-password"
                                     value={passwordVerify}
                                     onChange={(e) => setPasswordVerify(e.target.value)}
+                                    error={passwordVerifyError !== ''}
+                                    helperText={passwordVerifyError}
                                 />
                             </Grid>
                         </Grid>
@@ -226,7 +289,7 @@ export default function EditAccountScreen() {
                             fullWidth
                             variant="contained"
                             type="submit"
-                            disabled={!hasChanges}
+                            disabled={!isFormValid}
                         >
                             Confirm Changes
                         </Button>
@@ -243,7 +306,6 @@ export default function EditAccountScreen() {
                     </Box>
                 </Box>
                 <Copyright sx={{ mt: 5 }} />
-                { modalJSX }
             </Container>
     );
 }

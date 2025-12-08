@@ -31,6 +31,11 @@ export default function RegisterScreen() {
     const [passwordError, setPasswordError] = useState('');
     const [passwordVerifyError, setPasswordVerifyError] = useState('');
 
+    const [usernameTouched, setUsernameTouched] = useState(false);
+    const [emailTouched, setEmailTouched] = useState(false);
+    const [passwordTouched, setPasswordTouched] = useState(false);
+    const [passwordVerifyTouched, setPasswordVerifyTouched] = useState(false);
+
     const [isCheckingEmail, setIsCheckingEmail] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false);
 
@@ -252,8 +257,9 @@ export default function RegisterScreen() {
                                     autoFocus
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    error={usernameError !== ''}
-                                    helperText={usernameError}
+                                    onBlur={() => setUsernameTouched(true)}
+                                    error={usernameTouched && usernameError !== ''}
+                                    helperText={usernameTouched ? usernameError : ''}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -266,8 +272,9 @@ export default function RegisterScreen() {
                                     autoComplete="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    error={emailError !== ''}
-                                    helperText={emailError || (isCheckingEmail ? 'Checking email availability...' : '')}
+                                    onBlur={() => setEmailTouched(true)}
+                                    error={emailTouched && emailError !== ''}
+                                    helperText={emailTouched ? (emailError || (isCheckingEmail ? 'Checking email availability...' : '')) : ''}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -281,8 +288,9 @@ export default function RegisterScreen() {
                                     autoComplete="new-password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    error={passwordError !== ''}
-                                    helperText={passwordError}
+                                    onBlur={() => setPasswordTouched(true)}
+                                    error={passwordTouched && passwordError !== ''}
+                                    helperText={passwordTouched ? passwordError : ''}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -296,8 +304,9 @@ export default function RegisterScreen() {
                                     autoComplete="new-password"
                                     value={passwordVerify}
                                     onChange={(e) => setPasswordVerify(e.target.value)}
-                                    error={passwordVerifyError !== ''}
-                                    helperText={passwordVerifyError}
+                                    onBlur={() => setPasswordVerifyTouched(true)}
+                                    error={passwordVerifyTouched && passwordVerifyError !== ''}
+                                    helperText={passwordVerifyTouched ? passwordVerifyError : ''}
                                 />
                             </Grid>
                         </Grid>

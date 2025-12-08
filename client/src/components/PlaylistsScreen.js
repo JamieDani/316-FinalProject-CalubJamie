@@ -31,7 +31,6 @@ const PlaylistsScreen = () => {
 
         try {
             const response = await storeRequestSender.createPlaylist(
-                auth.user.username,
                 auth.user.email
             );
             if (response.data.success) {
@@ -114,8 +113,8 @@ const PlaylistsScreen = () => {
         if (filters.songYear) activeFilters.songYear = filters.songYear;
 
         const hasNoFilters = Object.keys(activeFilters).length === 0;
-        if (hasNoFilters && auth.user) {
-            activeFilters.username = auth.user.username;
+        if (hasNoFilters && auth.user && auth.user.playlists) {
+            activeFilters.playlistIds = auth.user.playlists;
         }
 
         fetchPlaylistsWithFilters(activeFilters);

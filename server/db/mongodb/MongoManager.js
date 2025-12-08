@@ -59,7 +59,7 @@ class MongoManager extends DatabaseManager {
     }
 
     // returns playlist on success and null on failure
-    async createPlaylist(userId, ownerUsername, ownerEmail) {
+    async createPlaylist(userId, ownerEmail) {
         try {
             const user = await User.findById(userId);
             if (!user) throw new Error("user not found");
@@ -70,7 +70,6 @@ class MongoManager extends DatabaseManager {
 
             const playlist = new Playlist({
                 name: playlistName,
-                ownerUsername: ownerUsername,
                 ownerEmail: ownerEmail,
                 songs: []
             });
@@ -80,7 +79,9 @@ class MongoManager extends DatabaseManager {
             user.playlists.push(playlist._id);
             await user.save();
 
-            return playlist;
+            const playlistObj = playlist.toObject();
+            playlistObj.ownerUsername = user.username;
+            return playlistObj;
         } catch (err) {
             throw err;
         }
@@ -96,7 +97,6 @@ class MongoManager extends DatabaseManager {
 
             const newPlaylist = new Playlist({
                 name: `${originalPlaylist.name} copy`,
-                ownerUsername: user.username,
                 ownerEmail: user.email,
                 songs: [...originalPlaylist.songs]
             });
@@ -120,7 +120,9 @@ class MongoManager extends DatabaseManager {
             user.playlists.push(newPlaylist._id);
             await user.save();
 
-            return newPlaylist;
+            const playlistObj = newPlaylist.toObject();
+            playlistObj.ownerUsername = user.username;
+            return playlistObj;
         } catch (err) {
             throw err;
         }
@@ -190,7 +192,7 @@ class MongoManager extends DatabaseManager {
                 if (err || !list) {
                     return reject(new Error("playlist not found"));
                 }
-    
+
                 User.findOne({ email: list.ownerEmail }, (err, user) => {
                     if (err) {
                         return reject(err);
@@ -198,9 +200,11 @@ class MongoManager extends DatabaseManager {
                     if (!user) {
                         return reject(new Error("user not found"));
                     }
-    
+
                     if (user._id.toString() === userId.toString()) {
-                        return resolve(list);
+                        const playlistObj = list.toObject();
+                        playlistObj.ownerUsername = user.username;
+                        return resolve(playlistObj);
                     } else {
                         return reject(new Error("authentication error"));
                     }
@@ -237,6 +241,10 @@ class MongoManager extends DatabaseManager {
     async getPlaylists(filters = {}) {
         try {
             const query = {};
+
+            if (filters.playlistIds && Array.isArray(filters.playlistIds) && filters.playlistIds.length > 0) {
+                query._id = { $in: filters.playlistIds };
+            }
 
             if (filters.name) {
                 query.name = { $regex: filters.name, $options: 'i' };
@@ -283,7 +291,24 @@ class MongoManager extends DatabaseManager {
             }
 
             const playlists = await Playlist.find(query);
-            return playlists;
+
+            const playlistsWithUsername = await Promise.all(
+                playlists.map(async (playlist) => {
+                    try {
+                        const user = await User.findOne({ email: playlist.ownerEmail });
+                        const playlistObj = playlist.toObject();
+                        playlistObj.ownerUsername = user ? user.username : playlist.ownerUsername || 'Unknown User';
+                        return playlistObj;
+                    } catch (error) {
+                        console.error(`Error fetching user for playlist ${playlist._id}:`, error);
+                        const playlistObj = playlist.toObject();
+                        playlistObj.ownerUsername = playlist.ownerUsername || 'Unknown User';
+                        return playlistObj;
+                    }
+                })
+            );
+
+            return playlistsWithUsername;
         } catch (err) {
             throw err;
         }

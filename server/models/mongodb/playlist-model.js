@@ -12,7 +12,7 @@ const ObjectId = Schema.Types.ObjectId
 const playlistSchema = new Schema(
     {
         name: { type: String, required: true },
-        ownerUsername: { type: String, required: true },
+        ownerUsername: { type: String, required: false },  // will be looked up from user via ownerEmail
         ownerEmail: { type: String, required: true },
         songs: [{type: ObjectId, ref: 'Song'}],
         listenerList: [{ type: String }],

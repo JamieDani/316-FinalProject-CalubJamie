@@ -21,7 +21,8 @@ getLoggedIn = async (req, res) => {
             user: {
                 username: loggedInUser.username,
                 email: loggedInUser.email,
-                profilePicture: loggedInUser.profilePicture
+                profilePicture: loggedInUser.profilePicture,
+                playlists: loggedInUser.playlists || []
             }
         })
     } catch (err) {
@@ -75,7 +76,8 @@ loginUser = async (req, res) => {
             user: {
                 username: existingUser.username,
                 email: existingUser.email,
-                profilePicture: existingUser.profilePicture
+                profilePicture: existingUser.profilePicture,
+                playlists: existingUser.playlists || []
             }
         })
 
@@ -149,7 +151,8 @@ updateUser = async (req, res) => {
             user: {
                 username: updatedUser.username,
                 email: updatedUser.email,
-                profilePicture: updatedUser.profilePicture
+                profilePicture: updatedUser.profilePicture,
+                playlists: updatedUser.playlists || []
             }
         });
 
