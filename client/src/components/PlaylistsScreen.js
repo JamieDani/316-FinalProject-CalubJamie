@@ -113,6 +113,11 @@ const PlaylistsScreen = () => {
         if (filters.songArtist) activeFilters.songArtist = filters.songArtist;
         if (filters.songYear) activeFilters.songYear = filters.songYear;
 
+        const hasNoFilters = Object.keys(activeFilters).length === 0;
+        if (hasNoFilters && auth.user) {
+            activeFilters.username = auth.user.username;
+        }
+
         fetchPlaylistsWithFilters(activeFilters);
     };
 
