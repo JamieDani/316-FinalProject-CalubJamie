@@ -107,6 +107,7 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
     const history = useHistory();
     const [playlistTitle, setPlaylistTitle] = useState("Untitled Playlist");
     const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [titleError, setTitleError] = useState('');
     const [songs, setSongs] = useState([]);
     const [draggedIndex, setDraggedIndex] = useState(null);
     const [canUndo, setCanUndo] = useState(false);
@@ -309,12 +310,33 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
         }
     };
 
+    const checkDuplicatePlaylistName = async (newName) => {
+        if (!auth.user || !auth.user.playlists || !playlist) return false;
+
+        try {
+            const response = await storeRequestSender.getPlaylists({ playlistIds: auth.user.playlists });
+            if (response.data.success) {
+                const userPlaylists = response.data.data;
+                const duplicate = userPlaylists.find(
+                    p => p._id !== playlist._id && p.name.toLowerCase() === newName.toLowerCase()
+                );
+                return duplicate !== undefined;
+            }
+            return false;
+        } catch (error) {
+            console.error("Error checking duplicate playlist name:", error);
+            return false;
+        }
+    };
+
     const handleTitleDoubleClick = () => {
         setIsEditingTitle(true);
+        setTitleError('');
     };
 
     const handleTitleChange = (event) => {
         setPlaylistTitle(event.target.value);
+        setTitleError('');
     };
 
     const handleTitleBlur = () => {
@@ -323,28 +345,47 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
 
     const handleTitleKeyDown = async (event) => {
         if (event.key === 'Enter') {
-            setIsEditingTitle(false);
             if (playlist && playlistTitle !== playlist.name) {
+                const isDuplicate = await checkDuplicatePlaylistName(playlistTitle);
+                if (isDuplicate) {
+                    setTitleError('You already have a playlist with this name');
+                    return;
+                }
+
                 try {
                     await storeRequestSender.updatePlaylistById(playlist._id, {
                         name: playlistTitle
                     });
                     console.log("Playlist title saved");
+                    setIsEditingTitle(false);
+                    setTitleError('');
                 } catch (error) {
                     console.error("Error updating playlist title:", error);
+                    setTitleError('Error updating playlist name');
                 }
+            } else {
+                setIsEditingTitle(false);
             }
         }
     };
 
     const handleSaveAndClose = async () => {
         if (playlist && playlistTitle !== playlist.name) {
+            const isDuplicate = await checkDuplicatePlaylistName(playlistTitle);
+            if (isDuplicate) {
+                setTitleError('You already have a playlist with this name');
+                return;
+            }
+
             try {
                 await storeRequestSender.updatePlaylistById(playlist._id, {
                     name: playlistTitle
                 });
+                setTitleError('');
             } catch (error) {
                 console.error("Error updating playlist:", error);
+                setTitleError('Error updating playlist name');
+                return;
             }
         }
         onClose();
@@ -353,46 +394,53 @@ export default function EditPlaylistModal({ open, onClose, playlist }) {
     return (
         <Modal open={open} onClose={onClose}>
             <Box sx={style}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                    {isEditingTitle ? (
-                        <input
-                            type="text"
-                            value={playlistTitle}
-                            onChange={handleTitleChange}
-                            onBlur={handleTitleBlur}
-                            onKeyDown={handleTitleKeyDown}
-                            autoFocus
-                            style={{
-                                fontSize: '24px',
-                                fontWeight: 'bold',
-                                border: '1px solid #ccc',
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                flex: 1,
-                                marginRight: '10px'
+                <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {isEditingTitle ? (
+                            <input
+                                type="text"
+                                value={playlistTitle}
+                                onChange={handleTitleChange}
+                                onBlur={handleTitleBlur}
+                                onKeyDown={handleTitleKeyDown}
+                                autoFocus
+                                style={{
+                                    fontSize: '24px',
+                                    fontWeight: 'bold',
+                                    border: titleError ? '2px solid red' : '1px solid #ccc',
+                                    padding: '4px 8px',
+                                    borderRadius: '4px',
+                                    flex: 1,
+                                    marginRight: '10px'
+                                }}
+                            />
+                        ) : (
+                            <Typography
+                                variant="h5"
+                                sx={{ fontWeight: 'bold', cursor: 'pointer', flex: 1 }}
+                                onDoubleClick={handleTitleDoubleClick}
+                            >
+                                {playlistTitle}
+                            </Typography>
+                        )}
+                        <IconButton
+                            onClick={handleAddSong}
+                            sx={{
+                                border: '2px solid #8932CC',
+                                color: '#8932CC',
+                                '&:hover': {
+                                    backgroundColor: '#f0e6ff'
+                                }
                             }}
-                        />
-                    ) : (
-                        <Typography
-                            variant="h5"
-                            sx={{ fontWeight: 'bold', cursor: 'pointer', flex: 1 }}
-                            onDoubleClick={handleTitleDoubleClick}
                         >
-                            {playlistTitle}
+                            <AddIcon />
+                        </IconButton>
+                    </Box>
+                    {titleError && (
+                        <Typography color="error" variant="caption" sx={{ mt: 0.5, display: 'block' }}>
+                            {titleError}
                         </Typography>
                     )}
-                    <IconButton
-                        onClick={handleAddSong}
-                        sx={{
-                            border: '2px solid #8932CC',
-                            color: '#8932CC',
-                            '&:hover': {
-                                backgroundColor: '#f0e6ff'
-                            }
-                        }}
-                    >
-                        <AddIcon />
-                    </IconButton>
                 </Box>
 
                 <Box
