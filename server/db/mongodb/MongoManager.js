@@ -107,6 +107,12 @@ class MongoManager extends DatabaseManager {
                 const song = await Song.findById(songId);
                 if (song) {
                     song.numPlaylists += 1;
+                    if (!song.playlists) {
+                        song.playlists = [];
+                    }
+                    if (!song.playlists.includes(newPlaylist._id)) {
+                        song.playlists.push(newPlaylist._id);
+                    }
                     await song.save();
                 }
             }
@@ -136,6 +142,9 @@ class MongoManager extends DatabaseManager {
             const song = await Song.findById(songId);
             if (song && song.numPlaylists > 0) {
               song.numPlaylists -= 1;
+              if (song.playlists) {
+                song.playlists = song.playlists.filter(id => id.toString() !== playlistId.toString());
+              }
               await song.save();
             }
           }
@@ -329,6 +338,12 @@ class MongoManager extends DatabaseManager {
                 const song = await Song.findById(songId);
                 if (song) {
                     song.numPlaylists += 1;
+                    if (!song.playlists) {
+                        song.playlists = [];
+                    }
+                    if (!song.playlists.includes(playlistId)) {
+                        song.playlists.push(playlistId);
+                    }
                     await song.save();
                 }
             }
@@ -359,6 +374,9 @@ class MongoManager extends DatabaseManager {
                 const song = await Song.findById(songId);
                 if (song && song.numPlaylists > 0) {
                     song.numPlaylists -= 1;
+                    if (song.playlists) {
+                        song.playlists = song.playlists.filter(id => id.toString() !== playlistId.toString());
+                    }
                     await song.save();
                 }
             }
@@ -380,7 +398,8 @@ class MongoManager extends DatabaseManager {
                 ownerUsername,
                 ownerEmail,
                 numPlaylists: 0,
-                numListens: 0
+                numListens: 0,
+                playlists: []
             });
             console.log("New song object created:", newSong);
             await newSong.save();
@@ -430,8 +449,20 @@ class MongoManager extends DatabaseManager {
 
     async deleteSong(songId) {
         try {
-            const song = await Song.findByIdAndDelete(songId);
+            const song = await Song.findById(songId);
             if (!song) throw new Error("song not found");
+
+            if (song.playlists && song.playlists.length > 0) {
+                for (const playlistId of song.playlists) {
+                    const playlist = await Playlist.findById(playlistId);
+                    if (playlist) {
+                        playlist.songs = playlist.songs.filter(id => id.toString() !== songId.toString());
+                        await playlist.save();
+                    }
+                }
+            }
+
+            await Song.findByIdAndDelete(songId);
             return;
         } catch (err) {
             console.error("Error in MongoManager deleteSong:", err);

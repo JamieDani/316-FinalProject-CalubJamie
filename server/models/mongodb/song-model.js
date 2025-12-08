@@ -10,7 +10,8 @@ const songSchema = new Schema({
     ownerUsername: { type: String, required: true },
     ownerEmail: { type: String, required: true },
     numPlaylists: { type: Number, required: true },
-    numListens: { type: Number, required: true }
+    numListens: { type: Number, required: true },
+    playlists: [{ type: ObjectId, ref: 'Playlist' }]
 });
 
 module.exports = mongoose.model('Song', songSchema)
