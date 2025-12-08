@@ -97,7 +97,11 @@ const PlaylistsScreen = () => {
             songArtist: '',
             songYear: ''
         });
-        fetchPlaylistsWithFilters({});
+        const emptyFilters = {};
+        if (auth.user && auth.user.playlists) {
+            emptyFilters.playlistIds = auth.user.playlists;
+        }
+        fetchPlaylistsWithFilters(emptyFilters);
     };
 
     const handleKeyDown = (event) => {
