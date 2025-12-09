@@ -253,27 +253,32 @@ const SongCatalogScreen = () => {
                 flexDirection: 'column',
                 padding: 4
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Typography variant="body1">Sort:</Typography>
-                    <FormControl sx={{ minWidth: 200 }}>
-                        <InputLabel>Sort Method</InputLabel>
-                        <Select
-                            label="Sort Method"
-                            value={sortMethod}
-                            onChange={handleSortChange}
-                        >
-                            <MenuItem value="listens-hi-lo">Listens (Hi-Lo)</MenuItem>
-                            <MenuItem value="listens-lo-hi">Listens (Lo-Hi)</MenuItem>
-                            <MenuItem value="playlists-hi-lo">Playlists (Hi-Lo)</MenuItem>
-                            <MenuItem value="playlists-lo-hi">Playlists (Lo-Hi)</MenuItem>
-                            <MenuItem value="year-a-z">Song title (A-Z)</MenuItem>
-                            <MenuItem value="year-z-a">Song title (Z-A)</MenuItem>
-                            <MenuItem value="artist-a-z">Song artist (A-Z)</MenuItem>
-                            <MenuItem value="artist-z-a">Song artist (Z-A)</MenuItem>
-                            <MenuItem value="year-hi-lo">Song year (Hi-Lo)</MenuItem>
-                            <MenuItem value="year-lo-hi">Song year (Lo-Hi)</MenuItem>
-                        </Select>
-                    </FormControl>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="body1">Sort:</Typography>
+                        <FormControl sx={{ minWidth: 200 }}>
+                            <InputLabel>Sort Method</InputLabel>
+                            <Select
+                                label="Sort Method"
+                                value={sortMethod}
+                                onChange={handleSortChange}
+                            >
+                                <MenuItem value="listens-hi-lo">Listens (Hi-Lo)</MenuItem>
+                                <MenuItem value="listens-lo-hi">Listens (Lo-Hi)</MenuItem>
+                                <MenuItem value="playlists-hi-lo">Playlists (Hi-Lo)</MenuItem>
+                                <MenuItem value="playlists-lo-hi">Playlists (Lo-Hi)</MenuItem>
+                                <MenuItem value="year-a-z">Song title (A-Z)</MenuItem>
+                                <MenuItem value="year-z-a">Song title (Z-A)</MenuItem>
+                                <MenuItem value="artist-a-z">Song artist (A-Z)</MenuItem>
+                                <MenuItem value="artist-z-a">Song artist (Z-A)</MenuItem>
+                                <MenuItem value="year-hi-lo">Song year (Hi-Lo)</MenuItem>
+                                <MenuItem value="year-lo-hi">Song year (Lo-Hi)</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                        {songs.length} Songs
+                    </Typography>
                 </Box>
 
                 <Box sx={{ flex: 1, overflowY: 'auto', mb: 2 }}>
