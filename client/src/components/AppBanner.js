@@ -62,11 +62,11 @@ export default function AppBanner() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem onClick={handleMenuClose}><Link to='/login/'>Login</Link></MenuItem>
-            <MenuItem onClick={handleMenuClose}><Link to='/register/'>Create New Account</Link></MenuItem>
+            <MenuItem component={Link} to='/login/' onClick={handleMenuClose}>Login</MenuItem>
+            <MenuItem component={Link} to='/register/' onClick={handleMenuClose}>Create New Account</MenuItem>
         </Menu>
     );
-    const loggedInMenu = 
+    const loggedInMenu =
         <Menu
             anchorEl={anchorEl}
             anchorOrigin={{
@@ -82,7 +82,7 @@ export default function AppBanner() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem><Link to='/edit-account/'>Edit Account</Link></MenuItem>
+            <MenuItem component={Link} to='/edit-account/' onClick={handleMenuClose}>Edit Account</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>        
 
