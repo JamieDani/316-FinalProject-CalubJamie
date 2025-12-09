@@ -95,10 +95,14 @@ const PlayPlaylistScreen = ({ open, onClose, playlist }) => {
     };
 
     const handleSongEnd = () => {
-        if (isLooping) {
-            if (playerRef.current) {
-                playerRef.current.seekTo(0);
-                playerRef.current.playVideo();
+        const isLastSong = currentSongIndex === songs.length - 1;
+
+        if (isLastSong) {
+            if (isLooping) {
+                setCurrentSongIndex(0);
+                setIsPlaying(true);
+            } else {
+                setIsPlaying(false);
             }
         } else {
             handleNext();
