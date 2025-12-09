@@ -189,7 +189,7 @@ const SongCatalogScreen = () => {
             <AddSongModal open={isEditSongModalOpen} onClose={handleCloseEditSongModal} mode="edit" song={selectedSong} />
             <DeleteSongConfirmModal open={isDeleteModalOpen} onClose={handleCloseDeleteModal} song={selectedSong} />
             <AddToPlaylistModal open={isAddToPlaylistModalOpen} onClose={handleCloseAddToPlaylistModal} song={selectedSong} onSongAdded={handleSongAddedToPlaylist} />
-        <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#ffe4e1' }}>
+        <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#e3f2fd' }}>
             <Box sx={{
                 flex: 1,
                 display: 'flex',

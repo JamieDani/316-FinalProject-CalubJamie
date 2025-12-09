@@ -58,7 +58,6 @@ class MongoManager extends DatabaseManager {
         }
     }
 
-    // returns playlist on success and null on failure
     async createPlaylist(userId, ownerEmail) {
         try {
             const user = await User.findById(userId);
@@ -268,7 +267,14 @@ class MongoManager extends DatabaseManager {
             }
 
             if (filters.username) {
-                query.ownerUsername = { $regex: filters.username, $options: 'i' };
+                const matchingUsers = await User.find({
+                    username: { $regex: filters.username, $options: 'i' }
+                });
+                const userEmails = matchingUsers.map(user => user.email);
+                if (userEmails.length === 0) {
+                    return []; 
+                }
+                query.ownerEmail = { $in: userEmails };
             }
 
             const songFilters = [];
@@ -533,7 +539,7 @@ class MongoManager extends DatabaseManager {
             if (!originalSong) throw new Error("song not found");
 
             const newSong = new Song({
-                title: originalSong.title,
+                title: originalSong.title + " copy",
                 artist: originalSong.artist,
                 year: originalSong.year,
                 youTubeId: originalSong.youTubeId,

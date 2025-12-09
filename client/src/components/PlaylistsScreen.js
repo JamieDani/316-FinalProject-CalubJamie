@@ -194,7 +194,7 @@ const PlaylistsScreen = () => {
                 onClose={handleCloseDeletePlaylistModal}
                 playlist={playlistToDelete}
             />
-        <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#ffe4e1' }}>
+        <Box sx={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: '#e3f2fd' }}>
             <Box sx={{
                 flex: 1,
                 display: 'flex',
