@@ -13,6 +13,24 @@
             "cwd": "${workspaceFolder}/server",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Reset Users",
+            "program": "${workspaceFolder}/server/scripts/resetUsers.js",
+            "cwd": "${workspaceFolder}/server",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Reset Playlists",
+            "program": "${workspaceFolder}/server/scripts/resetPlaylists.js",
+            "cwd": "${workspaceFolder}/server",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }
