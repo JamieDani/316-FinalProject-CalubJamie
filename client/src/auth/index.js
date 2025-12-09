@@ -122,7 +122,7 @@ function AuthContextProvider(props) {
                         errorMessage: null
                     }
                 })
-                history.push("/");
+                history.push("/playlists/");
             }
         } catch(error){
             authReducer({

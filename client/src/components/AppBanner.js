@@ -24,8 +24,9 @@ export default function AppBanner() {
     const isMenuOpen = Boolean(anchorEl);
 
     const hideNavButtons =
-        (location.pathname === '/' && !auth.loggedIn) ||
+        location.pathname === '/' ||
         location.pathname === '/register/' ||
+        location.pathname === '/login/' ||
         location.pathname === '/edit-account/';
 
     const handleProfileMenuOpen = (event) => {
@@ -120,10 +121,17 @@ export default function AppBanner() {
                     <Typography
                         variant="h4"
                         noWrap
-                        component="div"
-                        sx={{ display: { xs: 'none', sm: 'block' } }}
+                        component={Link}
+                        to='/'
+                        onClick={handleHouseClick}
+                        sx={{
+                            display: { xs: 'none', sm: 'block' },
+                            textDecoration: 'none',
+                            color: 'white',
+                            cursor: 'pointer'
+                        }}
                     >
-                        <Link onClick={handleHouseClick} style={{ textDecoration: 'none', color: 'white' }} to='/'>⌂</Link>
+                        ⌂
                     </Typography>
                     {!hideNavButtons && (
                         <Box sx={{ display: 'flex', gap: 2, ml: 4 }}>
