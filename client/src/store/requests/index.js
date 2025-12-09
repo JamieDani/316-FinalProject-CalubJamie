@@ -57,14 +57,18 @@ const fetchWrapper = async (url, options = {}) => {
 }
 
 
-export const createPlaylist = (newListName, newSongs, userEmail) => {
+export const createPlaylist = (ownerEmail) => {
     return fetchWrapper(`${BASE_URL}/playlist/`, {
         method: 'POST',
         body: JSON.stringify({
-            name: newListName,
-            songs: newSongs,
-            ownerEmail: userEmail
+            ownerEmail
         })
+    });
+}
+
+export const copyPlaylist = (id) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${id}/copy`, {
+        method: 'POST'
     });
 }
 
@@ -86,6 +90,26 @@ export const getPlaylistPairs = () => {
     });
 }
 
+export const getPlaylists = (filters = {}) => {
+    const queryParams = new URLSearchParams();
+
+    if (filters.name) queryParams.append('name', filters.name);
+    if (filters.username) queryParams.append('username', filters.username);
+    if (filters.songTitle) queryParams.append('songTitle', filters.songTitle);
+    if (filters.songArtist) queryParams.append('songArtist', filters.songArtist);
+    if (filters.songYear) queryParams.append('songYear', filters.songYear);
+    if (filters.playlistIds && Array.isArray(filters.playlistIds)) {
+        queryParams.append('playlistIds', JSON.stringify(filters.playlistIds));
+    }
+
+    const queryString = queryParams.toString();
+    const url = queryString ? `${BASE_URL}/playlists?${queryString}` : `${BASE_URL}/playlists`;
+
+    return fetchWrapper(url, {
+        method: 'GET'
+    });
+}
+
 export const updatePlaylistById = (id, playlist) => {
     return fetchWrapper(`${BASE_URL}/playlist/${id}`, {
         method: 'PUT',
@@ -95,12 +119,126 @@ export const updatePlaylistById = (id, playlist) => {
     });
 }
 
+export const addSongToPlaylist = (playlistId, songId, index = -1) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/add-song`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            songId,
+            index
+        })
+    });
+}
+
+export const removeSongFromPlaylist = (playlistId, songId) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/song/${songId}`, {
+        method: 'DELETE'
+    });
+}
+
+export const addSong = (title, artist, year, youTubeId, ownerUsername, ownerEmail) => {
+    return fetchWrapper(`${BASE_URL}/song`, {
+        method: 'POST',
+        body: JSON.stringify({
+            title,
+            artist,
+            year,
+            youTubeId,
+            ownerUsername,
+            ownerEmail
+        })
+    });
+}
+
+export const copySong = (songId, ownerUsername, ownerEmail) => {
+    return fetchWrapper(`${BASE_URL}/song/${songId}/copy`, {
+        method: 'POST',
+        body: JSON.stringify({
+            ownerUsername,
+            ownerEmail
+        })
+    });
+}
+
+export const getSongs = (filters = {}) => {
+    const queryParams = new URLSearchParams();
+
+    if (filters.title) queryParams.append('title', filters.title);
+    if (filters.artist) queryParams.append('artist', filters.artist);
+    if (filters.year) queryParams.append('year', filters.year);
+    if (filters.ownerEmail) queryParams.append('ownerEmail', filters.ownerEmail);
+
+    const queryString = queryParams.toString();
+    const url = queryString ? `${BASE_URL}/songs?${queryString}` : `${BASE_URL}/songs`;
+
+    return fetchWrapper(url, {
+        method: 'GET'
+    });
+}
+
+export const updateSong = (id, songData) => {
+    return fetchWrapper(`${BASE_URL}/song/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(songData)
+    });
+}
+
+export const deleteSong = (id) => {
+    return fetchWrapper(`${BASE_URL}/song/${id}`, {
+        method: 'DELETE'
+    });
+}
+
+export const getSongsOfPlaylist = (playlistId) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/songs`, {
+        method: 'GET'
+    });
+}
+
+export const getUserProfilePictureByEmail = (email) => {
+    return fetchWrapper(`${BASE_URL}/user/profile-picture?email=${encodeURIComponent(email)}`, {
+        method: 'GET'
+    });
+}
+
+export const addSongListen = (songId) => {
+    return fetchWrapper(`${BASE_URL}/song/${songId}/listen`, {
+        method: 'PUT'
+    });
+}
+
+export const trackPlaylistPlay = (playlistId, userEmail) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/play`, {
+        method: 'PUT',
+        body: JSON.stringify({ userEmail })
+    });
+}
+
+export const updatePlaylistAccess = (playlistId) => {
+    return fetchWrapper(`${BASE_URL}/playlist/${playlistId}/access`, {
+        method: 'PUT'
+    });
+}
+
 const apis = {
     createPlaylist,
+    copyPlaylist,
     deletePlaylistById,
     getPlaylistById,
     getPlaylistPairs,
-    updatePlaylistById
+    getPlaylists,
+    updatePlaylistById,
+    addSongToPlaylist,
+    removeSongFromPlaylist,
+    addSong,
+    copySong,
+    getSongs,
+    updateSong,
+    deleteSong,
+    getSongsOfPlaylist,
+    getUserProfilePictureByEmail,
+    addSongListen,
+    trackPlaylistPlay,
+    updatePlaylistAccess
 }
 
 export default apis

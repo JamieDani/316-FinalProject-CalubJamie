@@ -21,14 +21,27 @@ createPlaylist = (req, res) => {
     if (!body) {
         return res.status(400).json({
             success: false,
-            error: 'You must provide a Playlist',
+            error: 'You must provide owner info',
         })
     }
 
-    db.createPlaylist(req.userId, body.name, body.ownerEmail, body.songs)
-    .then(playlist => res.status(201).json({ playlist }))
-    .catch(err => res.status(400).json({ errorMessage: err.message || 'Playlist Not Created!' }));
+    db.createPlaylist(req.userId, body.ownerEmail)
+    .then(playlist => res.status(201).json({ success: true, playlist }))
+    .catch(err => res.status(400).json({ success: false, errorMessage: err.message || 'Playlist Not Created!' }));
 
+}
+
+copyPlaylist = async (req, res) => {
+    if(auth.verifyUser(req) === null){
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        })
+    }
+    console.log("copyPlaylist with id: " + JSON.stringify(req.params.id));
+
+    db.copyPlaylist(req.userId, req.params.id)
+    .then(playlist => res.status(201).json({ success: true, playlist }))
+    .catch(err => res.status(400).json({ success: false, errorMessage: err.message || 'Playlist Not Copied!' }));
 }
 
 deletePlaylist = async (req, res) => {
@@ -78,15 +91,18 @@ getPlaylistPairs = async (req, res) => {
         }));
 }
 getPlaylists = async (req, res) => {
-    if (auth.verifyUser(req) === null) {
-        return res.status(400).json({
-            errorMessage: 'UNAUTHORIZED'
-        });
-    }
+    const filters = {
+        name: req.query.name,
+        username: req.query.username,
+        songTitle: req.query.songTitle,
+        songArtist: req.query.songArtist,
+        songYear: req.query.songYear,
+        playlistIds: req.query.playlistIds ? JSON.parse(req.query.playlistIds) : null
+    };
 
-    console.log("getPlaylists");
+    console.log("getPlaylists filters:", JSON.stringify(filters));
 
-    db.getPlaylists()
+    db.getPlaylists(filters)
         .then(playlists => res.status(200).json({ success: true, data: playlists }))
         .catch(err => res.status(400).json({
             success: false,
@@ -123,11 +139,247 @@ updatePlaylist = async (req, res) => {
         }));
 };
 
+addSongToPlaylist = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const body = req.body;
+    if (!body || !body.songId) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide a songId',
+        });
+    }
+
+    console.log("addSongToPlaylist songId:", body.songId, "index:", body.index);
+
+    const index = body.index !== undefined ? body.index : -1;
+    db.addSongToPlaylist(req.userId, req.params.id, body.songId, index)
+        .then(updated => res.status(200).json({
+            success: true,
+            message: 'Song added to playlist!',
+        }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not added to playlist!'
+        }));
+};
+
+removeSongFromPlaylist = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    console.log("removeSongFromPlaylist playlistId:", req.params.id, "songId:", req.params.songId);
+
+    db.removeSongFromPlaylist(req.userId, req.params.id, req.params.songId)
+        .then(() => res.status(200).json({
+            success: true,
+            message: 'Song removed from playlist!',
+        }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not removed from playlist!'
+        }));
+};
+
+addSong = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const body = req.body;
+    console.log("addSong body:", JSON.stringify(body));
+
+    if (!body) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide a Song',
+        });
+    }
+
+    db.addSong(body.title, body.artist, body.year, body.youTubeId, body.ownerUsername, body.ownerEmail)
+        .then(song => res.status(201).json({ success: true, song }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song Not Created!'
+        }));
+};
+
+getSongs = async (req, res) => {
+    const filters = {
+        title: req.query.title,
+        artist: req.query.artist,
+        year: req.query.year,
+        ownerEmail: req.query.ownerEmail
+    };
+
+    console.log("getSongs filters:", JSON.stringify(filters));
+
+    db.getSongs(filters)
+        .then(songs => res.status(200).json({ success: true, songs }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error retrieving songs'
+        }));
+};
+
+updateSong = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const body = req.body;
+    console.log("updateSong body:", JSON.stringify(body));
+
+    if (!body) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide a body to update',
+        });
+    }
+
+    db.updateSong(req.params.id, body)
+        .then(song => res.status(200).json({ success: true, song }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not updated!'
+        }));
+};
+
+deleteSong = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    console.log("deleteSong with id:", req.params.id);
+
+    db.deleteSong(req.params.id)
+        .then(() => res.status(200).json({ success: true, message: 'Song deleted successfully' }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not deleted!'
+        }));
+};
+
+getSongsOfPlaylist = async (req, res) => {
+    console.log("getSongsOfPlaylist with id:", req.params.id);
+
+    db.getSongsOfPlaylist(req.params.id)
+        .then(songs => res.status(200).json({ success: true, songs }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error retrieving songs'
+        }));
+};
+
+getUserProfilePictureByEmail = async (req, res) => {
+    console.log("getUserProfilePictureByEmail with email:", req.query.email);
+
+    db.getUserProfilePictureByEmail(req.query.email)
+        .then(profilePicture => res.status(200).json({ success: true, profilePicture }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error retrieving profile picture'
+        }));
+};
+
+addSongListen = async (req, res) => {
+    console.log("addSongListen with id:", req.params.id);
+
+    db.incrementSongListens(req.params.id)
+        .then(song => res.status(200).json({ success: true, song }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error incrementing song listens'
+        }));
+};
+
+trackPlaylistPlay = async (req, res) => {
+    console.log("trackPlaylistPlay with id:", req.params.id);
+
+    const userEmail = req.body.userEmail || null;
+
+    try {
+        await db.updatePlaylistLastAccessed(req.params.id);
+        const playlist = await db.trackPlaylistListener(req.params.id, userEmail);
+        res.status(200).json({ success: true, playlist });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error tracking playlist play'
+        });
+    }
+};
+
+updatePlaylistAccess = async (req, res) => {
+    console.log("updatePlaylistAccess with id:", req.params.id);
+
+    try {
+        const playlist = await db.updatePlaylistLastAccessed(req.params.id);
+        res.status(200).json({ success: true, playlist });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Error updating playlist access time'
+        });
+    }
+};
+
+copySong = async (req, res) => {
+    if (auth.verifyUser(req) === null) {
+        return res.status(400).json({
+            errorMessage: 'UNAUTHORIZED'
+        });
+    }
+
+    const body = req.body;
+    if (!body || !body.ownerUsername || !body.ownerEmail) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide owner information',
+        });
+    }
+
+    console.log("copySong with id:", req.params.id);
+
+    db.copySong(req.params.id, body.ownerUsername, body.ownerEmail)
+        .then(song => res.status(201).json({ success: true, song }))
+        .catch(err => res.status(400).json({
+            success: false,
+            errorMessage: err.message || 'Song not copied!'
+        }));
+};
+
 module.exports = {
     createPlaylist,
+    copyPlaylist,
     deletePlaylist,
     getPlaylistById,
     getPlaylistPairs,
     getPlaylists,
-    updatePlaylist
+    updatePlaylist,
+    addSongToPlaylist,
+    removeSongFromPlaylist,
+    addSong,
+    getSongs,
+    updateSong,
+    deleteSong,
+    getSongsOfPlaylist,
+    getUserProfilePictureByEmail,
+    addSongListen,
+    trackPlaylistPlay,
+    updatePlaylistAccess,
+    copySong
 }

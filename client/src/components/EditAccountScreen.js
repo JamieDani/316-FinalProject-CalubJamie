@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom'
 import AuthContext from '../auth'
 import Copyright from './Copyright'
 
@@ -13,39 +14,49 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { IconButton } from '@mui/material';
+import { Stack, IconButton } from '@mui/material';
 
-export default function RegisterScreen() {
+export default function EditAccountScreen() {
     const { auth } = useContext(AuthContext);
+    const history = useHistory();
     const [profileImage, setProfileImage] = useState(null);
     const [profileImageBase64, setProfileImageBase64] = useState(null);
     const [imageError, setImageError] = useState('');
-
     const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordVerify, setPasswordVerify] = useState('');
+    const [hasChanges, setHasChanges] = useState(false);
+    const [isFormValid, setIsFormValid] = useState(false);
+    const [initialData, setInitialData] = useState({
+        username: '',
+        profilePicture: null
+    });
 
     const [usernameError, setUsernameError] = useState('');
-    const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [passwordVerifyError, setPasswordVerifyError] = useState('');
 
-    const [usernameTouched, setUsernameTouched] = useState(false);
-    const [emailTouched, setEmailTouched] = useState(false);
-    const [passwordTouched, setPasswordTouched] = useState(false);
-    const [passwordVerifyTouched, setPasswordVerifyTouched] = useState(false);
+    useEffect(() => {
+        if (auth.user) {
+            const currentUsername = auth.user.username || '';
+            const currentProfilePicture = auth.user.profilePicture || null;
 
-    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-    const [isFormValid, setIsFormValid] = useState(false);
+            setUsername(currentUsername);
+            setInitialData({
+                username: currentUsername,
+                profilePicture: currentProfilePicture
+            });
+
+            if (currentProfilePicture) {
+                setProfileImage(currentProfilePicture);
+                setProfileImageBase64(currentProfilePicture);
+            }
+        }
+    }, [auth.user]);
 
     useEffect(() => {
         validateUsername(username);
     }, [username]);
-
-    useEffect(() => {
-        validateEmail(email);
-    }, [email]);
 
     useEffect(() => {
         validatePassword(password);
@@ -56,66 +67,45 @@ export default function RegisterScreen() {
     }, [passwordVerify, password]);
 
     useEffect(() => {
-        const valid =
-            username.trim() !== '' &&
-            email.trim() !== '' &&
-            password.length >= 8 &&
-            passwordVerify === password &&
-            profileImageBase64 !== null &&
-            usernameError === '' &&
-            emailError === '' &&
-            passwordError === '' &&
-            passwordVerifyError === '' &&
-            !isCheckingEmail;
+        const usernameChanged = username !== initialData.username;
+        const passwordChanged = password !== '' || passwordVerify !== '';
+        const profilePictureChanged = profileImageBase64 !== initialData.profilePicture;
 
-        setIsFormValid(valid);
-    }, [username, email, password, passwordVerify, profileImageBase64, usernameError, emailError, passwordError, passwordVerifyError, isCheckingEmail]);
+        const hasAnyChanges = usernameChanged || passwordChanged || profilePictureChanged;
+        setHasChanges(hasAnyChanges);
+
+        let isValid = true;
+
+        if (usernameChanged && (username.trim() === '' || usernameError !== '')) {
+            isValid = false;
+        }
+
+        if (passwordChanged) {
+            if (password.length > 0 && password.length < 8) {
+                isValid = false;
+            }
+            if (passwordError !== '' || passwordVerifyError !== '') {
+                isValid = false;
+            }
+        }
+
+        if (imageError !== '') {
+            isValid = false;
+        }
+
+        setIsFormValid(hasAnyChanges && isValid);
+    }, [username, password, passwordVerify, profileImageBase64, initialData, usernameError, passwordError, passwordVerifyError, imageError]);
 
     const validateUsername = (value) => {
         if (value.trim() === '') {
-            setUsernameError('Username is required');
+            setUsernameError('Username cannot be empty');
         } else {
             setUsernameError('');
         }
     };
 
-    const validateEmail = async (value) => {
-        if (value.trim() === '') {
-            setEmailError('Email is required');
-            return;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-            setEmailError('Please enter a valid email address');
-            return;
-        }
-
-        setIsCheckingEmail(true);
-        try {
-            const response = await fetch(`http://localhost:4000/auth/checkEmail?email=${encodeURIComponent(value)}`, {
-                method: 'GET',
-                credentials: 'include'
-            });
-            const data = await response.json();
-
-            if (data.exists) {
-                setEmailError('This email is already registered');
-            } else {
-                setEmailError('');
-            }
-        } catch (error) {
-            console.error('Error checking email:', error);
-            setEmailError('Unable to verify email uniqueness');
-        } finally {
-            setIsCheckingEmail(false);
-        }
-    };
-
     const validatePassword = (value) => {
-        if (value.length === 0) {
-            setPasswordError('Password is required');
-        } else if (value.length < 8) {
+        if (value.length > 0 && value.length < 8) {
             setPasswordError('Password must be at least 8 characters');
         } else {
             setPasswordError('');
@@ -123,9 +113,7 @@ export default function RegisterScreen() {
     };
 
     const validatePasswordVerify = (value) => {
-        if (value.length === 0) {
-            setPasswordVerifyError('Please confirm your password');
-        } else if (value !== password) {
+        if (password !== '' && value !== password) {
             setPasswordVerifyError('Passwords do not match');
         } else {
             setPasswordVerifyError('');
@@ -146,7 +134,7 @@ export default function RegisterScreen() {
 
         img.onload = () => {
             if (img.width === 200 && img.height === 200) {
-                setProfileImage(objectUrl);
+                setProfileImage(objectUrl); 
                 setImageError('');
 
                 const reader = new FileReader();
@@ -174,14 +162,18 @@ export default function RegisterScreen() {
     const handleSubmit = (event) => {
         event.preventDefault();
         if (isFormValid) {
-            auth.registerUser(
+            auth.updateUser(
                 username,
-                email,
+                auth.user.email,
                 password,
                 passwordVerify,
                 profileImageBase64
             );
         }
+    };
+
+    const handleCancel = () => {
+        history.push('/');
     };
 
     return (
@@ -196,14 +188,8 @@ export default function RegisterScreen() {
                     }}
                 >
                     <Box sx={{ position: 'relative' }}>
-                        <Avatar
-                            sx={{
-                                m: 1,
-                                bgcolor: 'secondary.main',
-                                width: 80,
-                                height: 80,
-                                border: profileImageBase64 === null ? '2px solid red' : 'none'
-                            }}
+                        <Avatar 
+                            sx={{ m: 1, bgcolor: 'secondary.main', width: 80, height: 80 }}
                             src={profileImage || undefined}
                         >
                             {!profileImage && <LockOutlinedIcon />}
@@ -229,20 +215,15 @@ export default function RegisterScreen() {
                             />
                         </IconButton>
                     </Box>
-
-                    {profileImageBase64 === null && (
-                        <Typography color="error" variant="caption" sx={{ mt: 1 }}>
-                            Profile picture is required (200x200 pixels)
-                        </Typography>
-                    )}
+                    
                     {imageError && (
                         <Typography color="error" variant="caption" sx={{ mt: 1 }}>
                             {imageError}
                         </Typography>
                     )}
-
+                    
                     <Typography component="h1" variant="h5" sx={{ mt: 2 }}>
-                        Sign up
+                        Edit Account
                     </Typography>
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
@@ -257,9 +238,8 @@ export default function RegisterScreen() {
                                     autoFocus
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    onBlur={() => setUsernameTouched(true)}
-                                    error={usernameTouched && usernameError !== ''}
-                                    helperText={usernameTouched ? usernameError : ''}
+                                    error={usernameError !== ''}
+                                    helperText={usernameError}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -270,16 +250,13 @@ export default function RegisterScreen() {
                                     label="Email Address"
                                     name="email"
                                     autoComplete="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    onBlur={() => setEmailTouched(true)}
-                                    error={emailTouched && emailError !== ''}
-                                    helperText={emailTouched ? (emailError || (isCheckingEmail ? 'Checking email availability...' : '')) : ''}
+                                    value={auth.user?.email || ''}
+                                    disabled
+                                    helperText="You can't change your email"
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    required
                                     fullWidth
                                     name="password"
                                     label="Password"
@@ -288,14 +265,12 @@ export default function RegisterScreen() {
                                     autoComplete="new-password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    onBlur={() => setPasswordTouched(true)}
-                                    error={passwordTouched && passwordError !== ''}
-                                    helperText={passwordTouched ? passwordError : ''}
+                                    error={passwordError !== ''}
+                                    helperText={passwordError}
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    required
                                     fullWidth
                                     name="passwordVerify"
                                     label="Password Verify"
@@ -304,28 +279,30 @@ export default function RegisterScreen() {
                                     autoComplete="new-password"
                                     value={passwordVerify}
                                     onChange={(e) => setPasswordVerify(e.target.value)}
-                                    onBlur={() => setPasswordVerifyTouched(true)}
-                                    error={passwordVerifyTouched && passwordVerifyError !== ''}
-                                    helperText={passwordVerifyTouched ? passwordVerifyError : ''}
+                                    error={passwordVerifyError !== ''}
+                                    helperText={passwordVerifyError}
                                 />
                             </Grid>
                         </Grid>
+                        <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
                         <Button
-                            type="submit"
                             fullWidth
                             variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
+                            type="submit"
                             disabled={!isFormValid}
                         >
-                            Sign Up
+                            Confirm Changes
                         </Button>
-                        <Grid container justifyContent="flex-end">
-                            <Grid item>
-                                <Link href="/login/" variant="body2">
-                                    Already have an account? Sign in
-                                </Link>
-                            </Grid>
-                        </Grid>
+
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            type="button"
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </Button>
+                        </Stack>
                     </Box>
                 </Box>
                 <Copyright sx={{ mt: 5 }} />

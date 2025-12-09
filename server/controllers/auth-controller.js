@@ -19,9 +19,10 @@ getLoggedIn = async (req, res) => {
         return res.status(200).json({
             loggedIn: true,
             user: {
-                firstName: loggedInUser.firstName,
-                lastName: loggedInUser.lastName,
-                email: loggedInUser.email
+                username: loggedInUser.username,
+                email: loggedInUser.email,
+                profilePicture: loggedInUser.profilePicture,
+                playlists: loggedInUser.playlists || []
             }
         })
     } catch (err) {
@@ -73,9 +74,10 @@ loginUser = async (req, res) => {
         }).status(200).json({
             success: true,
             user: {
-                firstName: existingUser.firstName,
-                lastName: existingUser.lastName,  
-                email: existingUser.email              
+                username: existingUser.username,
+                email: existingUser.email,
+                profilePicture: existingUser.profilePicture,
+                playlists: existingUser.playlists || []
             }
         })
 
@@ -94,12 +96,78 @@ logoutUser = async (req, res) => {
     }).send();
 }
 
+updateUser = async (req, res) => {
+    console.log("UPDATING USER IN BACKEND");
+    try {
+        const userId = auth.verifyUser(req);
+        if (!userId) {
+            return res.status(401).json({
+                errorMessage: "Unauthorized"
+            });
+        }
+
+        const { username, email, password, passwordVerify, profilePicture } = req.body;
+        console.log("update user: " + username + " " + email);
+
+        if (!username && !email && !password && !profilePicture) {
+            return res.status(400).json({
+                errorMessage: "Please provide at least one field to update."
+            });
+        }
+
+        let passwordHash = undefined;
+        if (password) {
+            if (password.length < 8) {
+                return res.status(400).json({
+                    errorMessage: "Please enter a password of at least 8 characters."
+                });
+            }
+            if (password !== passwordVerify) {
+                return res.status(400).json({
+                    errorMessage: "Please enter the same password twice."
+                });
+            }
+
+            const saltRounds = 10;
+            const salt = await bcrypt.genSalt(saltRounds);
+            passwordHash = await bcrypt.hash(password, salt);
+        }
+
+        if (email) {
+            const existingUser = await db.getUserByEmail(email);
+            const existingUserId = existingUser ? (existingUser._id || existingUser.id) : null;
+            if (existingUser && existingUserId.toString() !== userId.toString()) {
+                return res.status(400).json({
+                    errorMessage: "An account with this email address already exists."
+                });
+            }
+        }
+
+        const updatedUser = await db.updateUser(userId, username, email, passwordHash, profilePicture);
+        console.log("user updated: " + (updatedUser._id || updatedUser.id));
+
+        return res.status(200).json({
+            success: true,
+            user: {
+                username: updatedUser.username,
+                email: updatedUser.email,
+                profilePicture: updatedUser.profilePicture,
+                playlists: updatedUser.playlists || []
+            }
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send();
+    }
+}
+
 registerUser = async (req, res) => {
     console.log("REGISTERING USER IN BACKEND");
     try {
-        const { firstName, lastName, email, password, passwordVerify } = req.body;
-        console.log("create user: " + firstName + " " + lastName + " " + email + " " + password + " " + passwordVerify);
-        if (!firstName || !lastName || !email || !password || !passwordVerify) {
+        const { username, email, password, passwordVerify, profilePicture } = req.body;
+        console.log("create user: " + username + " " + email + " " + password + " " + passwordVerify);
+        if (!username || !email || !password || !passwordVerify) {
             return res
                 .status(400)
                 .json({ errorMessage: "Please enter all required fields." });
@@ -121,7 +189,7 @@ registerUser = async (req, res) => {
                 })
         }
         console.log("password and password verify match");
-        const existingUser = await db.getUserByEmail(email); 
+        const existingUser = await db.getUserByEmail(email);
         console.log("existingUser: " + existingUser);
         if (existingUser) {
             return res
@@ -137,27 +205,20 @@ registerUser = async (req, res) => {
         const passwordHash = await bcrypt.hash(password, salt);
         console.log("passwordHash: " + passwordHash);
 
-        const savedUser = await db.createUser(firstName, lastName, email, passwordHash)
+        const savedUser = await db.createUser(username, email, passwordHash, profilePicture)
         console.log("new user saved: " + savedUser._id);
 
-        // LOGIN THE USER
-        const token = auth.signToken(savedUser._id);
-        console.log("token:" + token);
-
-        await res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none"
-        }).status(200).json({
+        // DO NOT LOGIN THE USER - just return success
+        res.status(201).json({
             success: true,
+            message: "Account created successfully. Please log in with your credentials.",
             user: {
-                firstName: savedUser.firstName,
-                lastName: savedUser.lastName,  
-                email: savedUser.email              
+                username: savedUser.username,
+                email: savedUser.email
             }
         })
 
-        console.log("token sent");
+        console.log("user registered successfully");
 
     } catch (err) {
         console.error(err);
@@ -165,9 +226,36 @@ registerUser = async (req, res) => {
     }
 }
 
+checkEmail = async (req, res) => {
+    try {
+        const { email } = req.query;
+
+        if (!email) {
+            return res.status(400).json({
+                exists: false,
+                errorMessage: "Email parameter is required"
+            });
+        }
+
+        const existingUser = await db.getUserByEmail(email);
+
+        return res.status(200).json({
+            exists: existingUser !== null
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            exists: false,
+            errorMessage: "Error checking email"
+        });
+    }
+}
+
 module.exports = {
     getLoggedIn,
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    updateUser,
+    checkEmail
 }

@@ -1,6 +1,7 @@
 const DatabaseManager = require("../DatabaseManager");
 const User = require('../../models/mongodb/user-model')
 const Playlist = require('../../models/mongodb/playlist-model')
+const Song = require('../../models/mongodb/song-model')
 
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
@@ -26,8 +27,8 @@ class MongoManager extends DatabaseManager {
         return playlist._id
     }
 
-    async createUser(firstName, lastName, email, passwordHash) {
-        const newUser = new User({firstName, lastName, email, passwordHash});
+    async createUser(username, email, passwordHash, profilePicture) {
+        const newUser = new User({username, email, passwordHash, profilePicture});
         await newUser.save();
         return newUser
     }
@@ -40,58 +41,164 @@ class MongoManager extends DatabaseManager {
         return await User.findOne({ email: email })
     }
 
-    // returns playlist on success and null on failure
-    createPlaylist(userId, name, ownerEmail, songs) {
-        return new Promise((resolve, reject) => {
+    async updateUser(userId, username, email, passwordHash, profilePicture) {
+        try {
+            const user = await User.findById(userId);
+            if (!user) throw new Error("user not found");
+
+            if (username !== undefined) user.username = username;
+            if (email !== undefined) user.email = email;
+            if (passwordHash !== undefined) user.passwordHash = passwordHash;
+            if (profilePicture !== undefined) user.profilePicture = profilePicture;
+
+            await user.save();
+            return user;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async createPlaylist(userId, ownerEmail) {
+        try {
+            const user = await User.findById(userId);
+            if (!user) throw new Error("user not found");
+
+            const existingPlaylists = await Playlist.find({ ownerEmail: ownerEmail });
+            const untitledCount = existingPlaylists.filter(p => p.name.startsWith("Untitled")).length;
+            const playlistName = `Untitled${untitledCount}`;
+
             const playlist = new Playlist({
-                name: name,
+                name: playlistName,
                 ownerEmail: ownerEmail,
-                songs: songs
+                songs: []
             });
 
-            console.log("playlist: " + playlist.toString());
-            if (!playlist) { return reject(new Error("invalid playlist object")); }
+            await playlist.save();
 
-            User.findOne({ _id: userId }, (err, user) => {
-                if (err) { return reject(err) }
-                if (!user) { return reject(new Error("user not found")) }
-                console.log("user found: " + JSON.stringify(user));
-                user.playlists.push(playlist._id);
-                user
-                    .save()
-                    .then(() => {
-                        playlist
-                            .save()
-                            .then(() => {
-                                resolve(playlist)
-                            }).catch(err => reject(err))
-                    }).catch(err => reject(err));
-            })
-        })
+            user.playlists.push(playlist._id);
+            await user.save();
+
+            const playlistObj = playlist.toObject();
+            playlistObj.ownerUsername = user.username;
+            return playlistObj;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async copyPlaylist(userId, playlistId) {
+        try {
+            const user = await User.findById(userId);
+            if (!user) throw new Error("user not found");
+
+            const originalPlaylist = await Playlist.findById(playlistId);
+            if (!originalPlaylist) throw new Error("playlist not found");
+
+            const newPlaylist = new Playlist({
+                name: `${originalPlaylist.name} copy`,
+                ownerEmail: user.email,
+                songs: [...originalPlaylist.songs]
+            });
+
+            await newPlaylist.save();
+
+            for (const songId of newPlaylist.songs) {
+                const song = await Song.findById(songId);
+                if (song) {
+                    song.numPlaylists += 1;
+                    if (!song.playlists) {
+                        song.playlists = [];
+                    }
+                    if (!song.playlists.includes(newPlaylist._id)) {
+                        song.playlists.push(newPlaylist._id);
+                    }
+                    await song.save();
+                }
+            }
+
+            user.playlists.push(newPlaylist._id);
+            await user.save();
+
+            const playlistObj = newPlaylist.toObject();
+            playlistObj.ownerUsername = user.username;
+            return playlistObj;
+        } catch (err) {
+            throw err;
+        }
     }
 
     async deletePlaylist(userId, playlistId) {
         try {
           const playlist = await Playlist.findById(playlistId);
           if (!playlist) throw new Error("playlist not found");
-      
+
           const owner = await User.findOne({ email: playlist.ownerEmail });
           if (!owner) throw new Error("user not found");
-      
+
           if (owner._id.toString() !== userId.toString()) {
             throw new Error("authentication error");
           }
-      
+
+          for (const songId of playlist.songs) {
+            const song = await Song.findById(songId);
+            if (song && song.numPlaylists > 0) {
+              song.numPlaylists -= 1;
+              if (song.playlists) {
+                song.playlists = song.playlists.filter(id => id.toString() !== playlistId.toString());
+              }
+              await song.save();
+            }
+          }
+
           await Playlist.findByIdAndDelete(playlistId);
-      
+
           owner.playlists = owner.playlists.filter(p => p.toString() !== playlistId.toString());
           await owner.save();
-      
+
           return;
         } catch (err) {
           throw err;
         }
       }
+
+    async trackPlaylistListener(playlistId, userEmail) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            const listenerIdentifier = userEmail || "Guest";
+
+            if (!playlist.listenerList) {
+                playlist.listenerList = [];
+            }
+
+            if (!playlist.listenerList.includes(listenerIdentifier)) {
+                playlist.listenerList.push(listenerIdentifier);
+                playlist.numListeners = playlist.listenerList.length;
+                await playlist.save();
+            }
+
+            return playlist;
+        } catch (err) {
+            console.error("Error in MongoManager trackPlaylistListener:", err);
+            throw err;
+        }
+    }
+
+    async updatePlaylistLastAccessed(playlistId) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            playlist.lastAccessed = new Date();
+            await playlist.save();
+
+            return playlist;
+        } catch (err) {
+            console.error("Error in MongoManager updatePlaylistLastAccessed:", err);
+            throw err;
+        }
+    }
 
     getPlaylistById(userId, playlistId) {
         return new Promise((resolve, reject) => {
@@ -99,7 +206,7 @@ class MongoManager extends DatabaseManager {
                 if (err || !list) {
                     return reject(new Error("playlist not found"));
                 }
-    
+
                 User.findOne({ email: list.ownerEmail }, (err, user) => {
                     if (err) {
                         return reject(err);
@@ -107,9 +214,11 @@ class MongoManager extends DatabaseManager {
                     if (!user) {
                         return reject(new Error("user not found"));
                     }
-    
+
                     if (user._id.toString() === userId.toString()) {
-                        return resolve(list);
+                        const playlistObj = list.toObject();
+                        playlistObj.ownerUsername = user.username;
+                        return resolve(playlistObj);
                     } else {
                         return reject(new Error("authentication error"));
                     }
@@ -123,17 +232,21 @@ class MongoManager extends DatabaseManager {
         try {
             const user = await User.findOne({ _id: userId });
             if (!user) throw new Error("user not found");
-    
-            const playlists = await Playlist.find({ ownerEmail: user.email });
+
+            const playlists = await Playlist.find({ ownerEmail: user.email })
+                .sort({ lastAccessed: -1 });
             if (!playlists) {
                 throw new Error("no playlists found");
             }
-    
+
             const pairs = playlists.map(list => ({
                 _id: list._id,
-                name: list.name
+                name: list.name,
+                ownerEmail: list.ownerEmail,
+                ownerUsername: list.ownerUsername,
+                lastAccessed: list.lastAccessed
             }));
-    
+
             return pairs;
         } catch (err) {
             throw err;
@@ -141,15 +254,84 @@ class MongoManager extends DatabaseManager {
     }
     
 
-    async getPlaylists() {
+    async getPlaylists(filters = {}) {
         try {
-            const playlists = await Playlist.find({});
-    
-            if (!playlists || playlists.length === 0) {
-                throw new Error("no playlists found");
+            const query = {};
+
+            if (filters.playlistIds && Array.isArray(filters.playlistIds) && filters.playlistIds.length > 0) {
+                query._id = { $in: filters.playlistIds };
             }
-    
-            return playlists;
+
+            if (filters.name) {
+                query.name = { $regex: filters.name, $options: 'i' };
+            }
+
+            if (filters.username) {
+                const matchingUsers = await User.find({
+                    username: { $regex: filters.username, $options: 'i' }
+                });
+                const userEmails = matchingUsers.map(user => user.email);
+                if (userEmails.length === 0) {
+                    return []; 
+                }
+                query.ownerEmail = { $in: userEmails };
+            }
+
+            const songFilters = [];
+
+            if (filters.songTitle) {
+                songFilters.push({ title: { $regex: filters.songTitle, $options: 'i' } });
+            }
+            if (filters.songArtist) {
+                songFilters.push({ artist: { $regex: filters.songArtist, $options: 'i' } });
+            }
+            if (filters.songYear) {
+                songFilters.push({ year: parseInt(filters.songYear) });
+            }
+
+            if (songFilters.length > 0) {
+                const playlistIdSets = await Promise.all(
+                    songFilters.map(async (songFilter) => {
+                        const matchingSongs = await Song.find(songFilter);
+                        const songIds = matchingSongs.map(song => song._id);
+                        const playlists = await Playlist.find({
+                            songs: { $in: songIds }
+                        });
+                        return new Set(playlists.map(p => p._id.toString()));
+                    })
+                );
+
+                let intersection = playlistIdSets[0];
+                for (let i = 1; i < playlistIdSets.length; i++) {
+                    intersection = new Set([...intersection].filter(id => playlistIdSets[i].has(id)));
+                }
+
+                if (intersection.size === 0) {
+                    return [];
+                }
+
+                query._id = { $in: Array.from(intersection) };
+            }
+
+            const playlists = await Playlist.find(query);
+
+            const playlistsWithUsername = await Promise.all(
+                playlists.map(async (playlist) => {
+                    try {
+                        const user = await User.findOne({ email: playlist.ownerEmail });
+                        const playlistObj = playlist.toObject();
+                        playlistObj.ownerUsername = user ? user.username : playlist.ownerUsername || 'Unknown User';
+                        return playlistObj;
+                    } catch (error) {
+                        console.error(`Error fetching user for playlist ${playlist._id}:`, error);
+                        const playlistObj = playlist.toObject();
+                        playlistObj.ownerUsername = playlist.ownerUsername || 'Unknown User';
+                        return playlistObj;
+                    }
+                })
+            );
+
+            return playlistsWithUsername;
         } catch (err) {
             throw err;
         }
@@ -159,29 +341,256 @@ class MongoManager extends DatabaseManager {
         try {
             const playlist = await Playlist.findById(playlistId);
             if (!playlist) throw new Error("playlist not found");
-    
+
             const owner = await User.findOne({ email: playlist.ownerEmail });
             if (!owner) throw new Error("user not found");
-    
+
             if (owner._id.toString() !== userId.toString()) {
                 throw new Error("authentication error");
             }
-    
+
             if (updatedData.playlist?.name !== undefined)
                 playlist.name = updatedData.playlist.name;
-    
+
             if (updatedData.playlist?.songs !== undefined)
                 playlist.songs = updatedData.playlist.songs;
-    
+
             await playlist.save();
-    
+
             return playlist;
         } catch (err) {
             throw err;
         }
     }
-    
-    
+
+    async addSongToPlaylist(userId, playlistId, songId, index = -1) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            const owner = await User.findOne({ email: playlist.ownerEmail });
+            if (!owner) throw new Error("user not found");
+
+            if (owner._id.toString() !== userId.toString()) {
+                throw new Error("authentication error");
+            }
+
+            if (!playlist.songs.includes(songId)) {
+                if (index === -1 || index >= playlist.songs.length) {
+                    playlist.songs.push(songId);
+                } else {
+                    playlist.songs.splice(index, 0, songId);
+                }
+                await playlist.save();
+
+                const song = await Song.findById(songId);
+                if (song) {
+                    song.numPlaylists += 1;
+                    if (!song.playlists) {
+                        song.playlists = [];
+                    }
+                    if (!song.playlists.includes(playlistId)) {
+                        song.playlists.push(playlistId);
+                    }
+                    await song.save();
+                }
+            }
+
+            return playlist;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async removeSongFromPlaylist(userId, playlistId, songId) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            const owner = await User.findOne({ email: playlist.ownerEmail });
+            if (!owner) throw new Error("user not found");
+
+            if (owner._id.toString() !== userId.toString()) {
+                throw new Error("authentication error");
+            }
+
+            const songWasInPlaylist = playlist.songs.some(id => id.toString() === songId.toString());
+            playlist.songs = playlist.songs.filter(id => id.toString() !== songId.toString());
+            await playlist.save();
+
+            if (songWasInPlaylist) {
+                const song = await Song.findById(songId);
+                if (song && song.numPlaylists > 0) {
+                    song.numPlaylists -= 1;
+                    if (song.playlists) {
+                        song.playlists = song.playlists.filter(id => id.toString() !== playlistId.toString());
+                    }
+                    await song.save();
+                }
+            }
+
+            return playlist;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async addSong(title, artist, year, youTubeId, ownerUsername, ownerEmail) {
+        try {
+            console.log("MongoManager addSong called");
+            const newSong = new Song({
+                title,
+                artist,
+                year,
+                youTubeId,
+                ownerUsername,
+                ownerEmail,
+                numPlaylists: 0,
+                numListens: 0,
+                playlists: []
+            });
+            console.log("New song object created:", newSong);
+            await newSong.save();
+            console.log("Song saved successfully:", newSong);
+            return newSong;
+        } catch (err) {
+            console.error("Error in MongoManager addSong:", err);
+            throw err;
+        }
+    }
+
+    async getSongs(filters = {}) {
+        try {
+            const query = {};
+
+            if (filters.title) {
+                query.title = { $regex: filters.title, $options: 'i' };
+            }
+            if (filters.artist) query.artist = filters.artist;
+            if (filters.year) query.year = parseInt(filters.year);
+            if (filters.ownerEmail) query.ownerEmail = filters.ownerEmail;
+
+            const songs = await Song.find(query);
+            return songs;
+        } catch (err) {
+            console.error("Error in MongoManager getSongs:", err);
+            throw err;
+        }
+    }
+
+    async updateSong(songId, updatedData) {
+        try {
+            const song = await Song.findById(songId);
+            if (!song) throw new Error("song not found");
+
+            if (updatedData.title !== undefined) song.title = updatedData.title;
+            if (updatedData.artist !== undefined) song.artist = updatedData.artist;
+            if (updatedData.year !== undefined) song.year = updatedData.year;
+            if (updatedData.youTubeId !== undefined) song.youTubeId = updatedData.youTubeId;
+
+            await song.save();
+            return song;
+        } catch (err) {
+            console.error("Error in MongoManager updateSong:", err);
+            throw err;
+        }
+    }
+
+    async deleteSong(songId) {
+        try {
+            const song = await Song.findById(songId);
+            if (!song) throw new Error("song not found");
+
+            if (song.playlists && song.playlists.length > 0) {
+                for (const playlistId of song.playlists) {
+                    const playlist = await Playlist.findById(playlistId);
+                    if (playlist) {
+                        playlist.songs = playlist.songs.filter(id => id.toString() !== songId.toString());
+                        await playlist.save();
+                    }
+                }
+            }
+
+            await Song.findByIdAndDelete(songId);
+            return;
+        } catch (err) {
+            console.error("Error in MongoManager deleteSong:", err);
+            throw err;
+        }
+    }
+
+    async incrementSongListens(songId) {
+        try {
+            const song = await Song.findById(songId);
+            if (!song) throw new Error("song not found");
+
+            song.numListens += 1;
+            await song.save();
+            return song;
+        } catch (err) {
+            console.error("Error in MongoManager incrementSongListens:", err);
+            throw err;
+        }
+    }
+
+    async copySong(songId, ownerUsername, ownerEmail) {
+        try {
+            const originalSong = await Song.findById(songId);
+            if (!originalSong) throw new Error("song not found");
+
+            const newSong = new Song({
+                title: originalSong.title + " copy",
+                artist: originalSong.artist,
+                year: originalSong.year,
+                youTubeId: originalSong.youTubeId,
+                ownerUsername: ownerUsername,
+                ownerEmail: ownerEmail,
+                numPlaylists: 0,
+                numListens: 0,
+                playlists: []
+            });
+
+            await newSong.save();
+            return newSong;
+        } catch (err) {
+            console.error("Error in MongoManager copySong:", err);
+            throw err;
+        }
+    }
+
+    async getSongsOfPlaylist(playlistId) {
+        try {
+            const playlist = await Playlist.findById(playlistId);
+            if (!playlist) throw new Error("playlist not found");
+
+            const songs = await Song.find({ _id: { $in: playlist.songs } });
+
+            const songMap = {};
+            songs.forEach(song => {
+                songMap[song._id.toString()] = song;
+            });
+
+            const orderedSongs = playlist.songs.map(songId => songMap[songId.toString()]).filter(song => song !== undefined);
+
+            return orderedSongs;
+        } catch (err) {
+            console.error("Error in MongoManager getSongsOfPlaylist:", err);
+            throw err;
+        }
+    }
+
+    async getUserProfilePictureByEmail(email) {
+        try {
+            const user = await User.findOne({ email: email });
+            if (!user) throw new Error("user not found");
+            return user.profilePicture || null;
+        } catch (err) {
+            console.error("Error in MongoManager getUserProfilePictureByEmail:", err);
+            throw err;
+        }
+    }
+
+
 }
 
 module.exports = MongoManager;
